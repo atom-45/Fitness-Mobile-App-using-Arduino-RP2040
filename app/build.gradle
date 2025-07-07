@@ -1,0 +1,60 @@
+plugins {
+    alias(libs.plugins.android.application)
+    id 'androidx.navigation.safeargs'
+}
+
+android {
+    namespace 'com.atom.bluetoothfitnessapplication'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.atom.bluetoothfitnessapplication"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        dataBinding true
+    }
+}
+
+dependencies {
+
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.activity
+    implementation libs.constraintlayout
+    implementation libs.room.rxjava3
+    implementation libs.room.paging
+    implementation libs.room.runtime
+    implementation libs.core.splashscreen
+    implementation libs.rxjava
+    implementation libs.rxandroid
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+    implementation libs.dagger
+    implementation libs.mpandroidchart
+    implementation (libs.material.calendarview){
+        exclude group: 'com.android.support'
+    }
+    implementation libs.material.calendar.view
+    annotationProcessor libs.dagger.compiler
+    annotationProcessor libs.room.compiler
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}
