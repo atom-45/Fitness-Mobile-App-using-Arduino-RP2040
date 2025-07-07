@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flap_jack">Flap Jack</string>
+    <string name="weights">Weights</string>
+    <string name="backs">Backs</string>
+    <string name="mt_climbers">Mt. Climbers</string>
+    <string name="walking">Walking</string>
+    <string name="skipping">Skipping</string>
+    <string name="sit_up">Sit Up</string>
+    <string name="push_up">Push Up</string>
+    <string name="description">Description</string>
+    <string name="start_stop">Start/Stop</string>
+    <string name="bluetooth_connected">Bluetooth Connected</string>
+    <string name="bluetooth_not_connected">Bluetooth Not Connected</string>
+    <string name="push_up_exercise">Push Up exercise on going</string>
+    <string name="sit_up_exercise">Sit Up exercise on going</string>
+    <string name="skipping_exercise">Skipping exercise on going</string>
+    <string name="walking_exercise_on_going">Walking exercise on going</string>
+    <string name="flap_jack_exercise">Flap Jack exercise on going</string>
+    <string name="weights_exercise_on_going">Weights exercise on going</string>
+    <string name="mountain_climbers_exercise">Mountain Climbers exercise on going</string>
+    <string name="stop_exercise">Stop Exercise</string>
+    <string name="not_connected_no_exercise">Not Connected/No Exercise</string>
+    <string name="describe_your_exercise">Describe Your Exercise</string>
+    <string name="exercising_stopped_or_paused">Exercising Stopped or Paused</string>
+    <string name="plank">Plank</string>
+    <string name="plank_exercise_on_going">Plank exercise on going</string>
+    <string name="reset_timer">Reset</string>
+    <string name="acceleration_type">Acceleration Type</string>
+    <string name="exercise_type">Exercise Type</string>
+    <string name="date">Date</string>
+    <string name="reset">Reset</string>
+    <string name="stop">Stop</string>
+    <string name="exercises">Exercises</string>
+    <string name="accelerometer">Accelerometer</string>
+    <string name="timer_format">00 : 00 : 00</string>
+    <string name="direction_X">X</string>
+    <string name="direction_Y">Y</string>
+    <string name="direction_Z">Z</string>
+    <string name="date_format">dd/MM/yyyy</string>
+    <string name="direction">Direction</string>
+    <string name="fitness_progress">Fitness Progress</string>
+    <string name="i_am_attractive">I Am Attractive</string>
+    <string name="i_am_brave">I Am Brave</string>
+    <string name="i_can_do_this">I Can Do This</string>
+    <string name="i_am_confident">I Am Confident</string>
+    <string name="the_vision_is_bigger_than_my_current_problems">The Vision Is Bigger Than My Current Problems</string>
+    <string name="delay_gratification">Delay Gratification</string>
+    <string name="i_am_a_king">I Am A King</string>
+    <string name="i_am_handsome">I Am Handsome</string>
+    <string name="stay_humble_and_grateful">Stay Humble and Grateful</string>
+
+    <string-array name="exercises_array">
+        <item>@string/push_up</item>
+        <item>@string/sit_up</item>
+        <item>@string/skipping</item>
+        <item>@string/walking</item>
+        <item>@string/flap_jack</item>
+        <item>@string/weights</item>
+        <item>@string/backs</item>
+        <item>@string/mt_climbers</item>
+        <item>@string/plank</item>
+    </string-array>
+
+    <string-array name="acceleration_array">
+        <item>@string/acceleration_X</item>
+        <item>@string/acceleration_Y</item>
+        <item>@string/acceleration_Z</item>
+    </string-array>
+
+    <string-array name="directions_array">
+        <item>@string/direction_X</item>
+        <item>@string/direction_Y</item>
+        <item>@string/direction_Z</item>
+    </string-array>
+</resources>

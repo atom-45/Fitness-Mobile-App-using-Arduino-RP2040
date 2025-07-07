@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Candy colours -->
+    <color name="Red">#FF595E</color>
+    <color name="Yellow">#FFCA3A</color>
+    <color name="Green">#8AC926</color>
+    <color name="Blue">#1982C4</color>
+    <color name="Purple">#6A4C93</color>
+
+    <!-- Candy Variant Colours -->
+    <color name="YellowVariant">#E9AC04</color>
+    <color name="PurpleVariant">#63399C</color>
+    <color name="PurpleVariant2">#A773ED</color>
+    <color name="RedVariant">#E2484E</color>
+
+    <color name="grey_one">#424244</color>
+    <color name="grey_two">#b1afb5</color>
+    <color name="grey_three">#1E1E1F</color>
+    <color name="grey_four">#3C3B3D</color>
+    <color name="grey_five">#6D6C70</color>
+    <color name="grey_six">#A2A1A6</color>
+    <color name="grey_seven">#CBC9CF</color>
+
+    <!-- Energizing Colours -->
+    <color name="electric_blue_one">#03A9F4</color>
+    <color name="electric_blue_two">#007BFF</color>
+    <color name="lime_green">#32CD32</color>
+    <color name="neon_green">#39FF14</color>
+    <color name="pink_blaze">#FF99</color>
+    <color name="orange_blaze">#FF9900</color>
+    <color name="bright_orange">#FF6F00</color>
+    <color name="lime_green_change">#78D850</color>
+
+    <!-- Bold and Motivating Colours -->
+    <color name="deep_navy">#032B44</color>
+    <color name="bright_coral">#FFC67D</color>
+    <color name="fiery_red">#FF3737</color>
+    <color name="crimson_red">#DC143C</color>
+    <color name="vivid_purple">#9C27B0</color>
+    <color name="jet_black">#121212</color>
+    <color name="light_grey">#E0E0E0</color>
+
+
+    <!-- Fresh and Calming Colours -->
+    <color name="minty_fresh">#ACFFAC</color>
+    <color name="aqua_cyan">#00E5FF</color>
+    <color name="sky_blue">#87CEEB</color>
+    <color name="green_tea">#8BC34A</color>
+
+    <!-- Earth Tones -->
+    <color name="terracotta">#DA70D6</color>
+    <color name="sage_green">#8B9467</color>
+    <color name="sand">#F5F5DC</color>
+
+    <!-- Pastels -->
+    <color name="light_blue">#ADD8E6</color>
+    <color name="pale_pink">#FFC0CB</color>
+    <color name="mint_green">#ACFFAC</color>
+
+</resources>
