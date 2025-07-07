@@ -1,0 +1,1121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+    
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollIndicators="right"
+        android:scrollbars="vertical"
+        android:background="@color/white">
+
+
+         <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lime_green_change"
+            tools:context=".presentation.activities.MainActivity">
+
+             <LinearLayout
+                 android:id="@+id/mainActivityTop_linearLayout"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:background="@color/lime_green_change"
+                 android:orientation="horizontal"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toTopOf="parent">
+
+                 <androidx.cardview.widget.CardView
+                     android:id="@+id/mainActivityPositiveAffirmations_cardView"
+                     android:layout_width="300dp"
+                     android:layout_height="60dp"
+                     android:layout_margin="10dp"
+                     android:background="@color/white"
+                     app:cardCornerRadius="10dp"
+                     app:cardElevation="10dp">
+
+                     <ViewFlipper
+                         android:id="@+id/mainActivity_viewFlipper"
+                         android:layout_width="match_parent"
+                         android:layout_height="match_parent"
+                         android:flipInterval="2000"
+                         android:autoStart="true"
+                         android:background="@color/deep_navy">
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationOne_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_am_attractive"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationTwo_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_am_lovable"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationThree_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_am_brave"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationFour_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_can_do_this"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationFive_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_am_confident"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationSix_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_am_a_king"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationSeven_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/stay_humble_and_grateful"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationEight_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/the_vision_is_bigger_than_my_current_problems"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationNine_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/delay_gratification"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+
+                         <TextView
+                             android:id="@+id/mainActivityPositiveAffirmationTen_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="@string/i_am_handsome"
+                             android:textColor="@color/white"
+                             android:textFontWeight="500"
+                             android:textStyle="italic"
+                             android:autoSizeMaxTextSize="20sp"
+                             android:autoSizeMinTextSize="14sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"/>
+
+                     </ViewFlipper>
+
+
+
+                 </androidx.cardview.widget.CardView>
+
+                 <androidx.cardview.widget.CardView
+                     android:id="@+id/mainActivityBluetoothStatus_cardView"
+                     android:layout_width="60dp"
+                     android:layout_height="60dp"
+                     android:layout_margin="10dp"
+                     android:background="@color/white"
+                     app:cardCornerRadius="10dp"
+                     app:cardElevation="10dp">
+
+                     <LinearLayout
+                         android:id="@+id/mainActivityBluetoothStatus_linearLayout"
+                         android:layout_width="match_parent"
+                         android:layout_height="match_parent"
+                         android:background="@color/light_grey"
+                         android:orientation="vertical"
+                         tools:ignore="UseCompoundDrawables">
+
+                         <ImageView
+                             android:id="@+id/mainActivityBluetoothStatus_imageView"
+                             android:layout_width="match_parent"
+                             android:layout_height="30dp"
+                             android:importantForAccessibility="no"
+                             android:padding="2dp"
+                             android:src="@drawable/baseline_bluetooth_searching_24"
+                             android:layout_gravity="center"/>
+
+                         <TextView
+                             android:id="@+id/mainActivityBluetoothExerciseStatus_textView"
+                             android:layout_width="match_parent"
+                             android:layout_height="match_parent"
+                             android:autoSizeMaxTextSize="13sp"
+                             android:autoSizeMinTextSize="10sp"
+                             android:autoSizeStepGranularity="1sp"
+                             android:autoSizeTextType="uniform"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="center"
+                             android:text="Not Connected"
+                             android:textColor="@color/black" />
+
+
+                     </LinearLayout>
+
+                 </androidx.cardview.widget.CardView>
+             </LinearLayout>
+
+             <androidx.cardview.widget.CardView
+                 android:id="@+id/mainActivityCalendar_cardView"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_margin="10dp"
+                 android:background="@color/white"
+                 app:cardCornerRadius="10dp"
+                 app:cardElevation="10dp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityTop_linearLayout">
+
+                 <com.applandeo.materialcalendarview.CalendarView
+                     android:id="@+id/mainActivity_calenderView"
+                     android:layout_width="match_parent"
+                     android:layout_height="match_parent"
+                     app:eventsEnabled="true"
+                     app:layout_constraintEnd_toEndOf="parent"
+                     app:layout_constraintStart_toStartOf="parent"
+                     app:layout_constraintTop_toBottomOf="@+id/mainActivityIntro_textView"
+                     app:selectionColor="@color/Red"
+                     app:swipeEnabled="true"
+                     app:type="many_days_picker" />
+
+             </androidx.cardview.widget.CardView>
+
+             <TextView
+                 android:id="@+id/mainActivityExercise_textView"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginTop="40dp"
+                 android:fontFamily="@font/marvel"
+                 android:text="@string/exercises"
+                 android:textColor="@color/white"
+                 android:textFontWeight="500"
+                 android:gravity="center"
+                 android:textSize="30sp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="0.019"
+                 app:layout_constraintStart_toStartOf="@+id/mainActivityCalendar_cardView"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityCalendar_cardView" />
+
+
+             <androidx.cardview.widget.CardView
+                 android:id="@+id/mainActivityTimer_cardView"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginStart="10dp"
+                 android:layout_marginEnd="10dp"
+                 android:layout_marginTop="40dp"
+                 android:background="@color/white"
+                 app:cardCornerRadius="10dp"
+                 app:cardElevation="10dp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityExercise_textView">
+
+                 <LinearLayout
+                     android:id="@+id/mainActivityTimer_linearLayout"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_gravity="center"
+                     android:background="@color/deep_navy"
+                     android:layoutMode="opticalBounds"
+                     android:orientation="horizontal"
+                     app:layout_constraintEnd_toEndOf="parent"
+                     app:layout_constraintStart_toStartOf="parent"
+                     app:layout_constraintTop_toBottomOf="@+id/mainActivityExercise_textView">
+
+                     <TextView
+                         android:id="@+id/mainActivityTimer_textView"
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:layout_margin="10dp"
+                         android:fontFamily="@font/marvel"
+                         android:gravity="center"
+                         android:text="@string/timer_format"
+                         android:textColor="@color/white"
+                         android:textFontWeight="500"
+                         android:textSize="30sp" />
+
+                     <com.google.android.material.button.MaterialButton
+                         android:id="@+id/mainActivityStopTimer_materialButton"
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:layout_margin="10dp"
+                         android:text="@string/stop"
+                         android:fontFamily="@font/marvel"
+                         android:backgroundTint="@color/crimson_red"/>
+
+                     <com.google.android.material.button.MaterialButton
+                         android:id="@+id/mainActivityResetTimer_materialButton"
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:layout_margin="10dp"
+                         android:fontFamily="@font/marvel"
+                         android:text="@string/reset" />
+                 </LinearLayout>
+             </androidx.cardview.widget.CardView>
+
+
+             <androidx.cardview.widget.CardView
+                 android:id="@+id/mainActivityExercises_cardView"
+                 android:layout_width="match_parent"
+                 android:layout_height="200dp"
+                 android:layout_marginStart="10dp"
+                 android:layout_marginTop="40dp"
+                 android:layout_marginEnd="10dp"
+                 app:cardCornerRadius="10dp"
+                 app:cardElevation="10dp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityTimer_cardView">
+
+                 <LinearLayout
+                     android:id="@+id/mainActivityExerciseDescription_linearLayout"
+                     android:layout_width="match_parent"
+                     android:layout_height="match_parent"
+                     android:orientation="vertical"
+                     android:background="@color/deep_navy">
+
+                     <com.google.android.material.textfield.TextInputLayout
+                         android:id="@+id/mainActivityExerciseDescription_textInputLayout"
+                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                         android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+                         android:layout_margin="10dp"
+                         android:hint="@string/description"
+                         android:textColorHint="@color/white"
+                         android:importantForAutofill="no"
+                         app:boxCornerRadiusTopStart="10dp"
+                         app:boxCornerRadiusBottomEnd="10dp"
+                         app:boxCornerRadiusBottomStart="10dp"
+                         app:boxCornerRadiusTopEnd="10dp"
+                         app:endIconCheckable="true"
+                         app:endIconDrawable="@drawable/round_add_24"
+                         app:endIconMode="custom"
+                         app:endIconScaleType="center"
+                         app:endIconTint="@color/white"
+                         app:hintTextColor="@color/white"
+                         app:layout_constraintEnd_toEndOf="parent"
+                         app:layout_constraintStart_toStartOf="parent"
+                         app:layout_constraintTop_toBottomOf="@+id/mainActivityExerciseDescription_textView">
+
+                         <com.google.android.material.textfield.TextInputEditText
+                             android:id="@+id/mainActivityExerciseDescription_textInputEditText"
+                             android:layout_width="match_parent"
+                             android:layout_height="100dp"
+                             android:fontFamily="@font/marvel"
+                             android:gravity="start|center"
+                             android:padding="4dp"
+                             android:textColor="@color/white" />
+
+                     </com.google.android.material.textfield.TextInputLayout>
+
+
+                     <HorizontalScrollView
+                         android:id="@+id/mainActivityExercises_horizontal"
+                         android:layout_width="match_parent"
+                         android:layout_height="match_parent">
+
+                         <com.google.android.material.chip.ChipGroup
+                             android:id="@+id/mainActivity_chipGroup"
+                             android:layout_width="wrap_content"
+                             android:layout_height="match_parent"
+                             android:layout_margin="5dp"
+                             app:chipSpacing="5dp"
+                             app:layout_constraintEnd_toEndOf="parent"
+                             app:layout_constraintStart_toStartOf="parent"
+                             app:layout_constraintTop_toBottomOf="@+id/mainActivityTimer_textView"
+                             app:singleLine="true"
+                             app:singleSelection="true">
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityWeights_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/weights"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityFlapJacks_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/flap_jack"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityMountainClimbers_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/mt_climbers"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityBacks_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/backs"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityPushUp_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/push_up"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivitySitUp_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:fontFamily="@font/marvel"
+                                 android:text="@string/sit_up"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityPlank_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/plank"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivitySkipping_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/skipping"
+                                 app:chipIconVisible="true" />
+
+                             <com.google.android.material.chip.Chip
+                                 android:id="@+id/mainActivityWalking_chip"
+                                 style="@style/Base.Theme.ChipStyle"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="@string/walking"
+                                 app:chipIconVisible="true" />
+
+                         </com.google.android.material.chip.ChipGroup>
+                     </HorizontalScrollView>
+                 </LinearLayout>
+             </androidx.cardview.widget.CardView>
+
+             <TextView
+                 android:id="@+id/mainActivityFitnessGraph_textView"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginTop="40dp"
+                 android:fontFamily="@font/marvel"
+                 android:gravity="center"
+                 android:text="@string/fitness_progress"
+                 android:textColor="@color/white"
+                 android:textFontWeight="500"
+                 android:textSize="30sp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="0.026"
+                 app:layout_constraintStart_toStartOf="@+id/mainActivityCalendar_cardView"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityExercises_cardView" />
+
+             <androidx.cardview.widget.CardView
+                 android:id="@+id/mainActivityFitnessProgress_cardView"
+                 android:layout_width="match_parent"
+                 android:layout_height="560dp"
+                 android:layout_marginStart="10dp"
+                 android:layout_marginEnd="10dp"
+                 android:layout_marginTop="10dp"
+                 android:layout_marginBottom="100dp"
+                 app:cardCornerRadius="10dp"
+                 app:cardElevation="10dp"
+                 app:layout_constraintBottom_toBottomOf="parent"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityFitnessGraph_textView">
+
+                 <androidx.constraintlayout.widget.ConstraintLayout
+                     android:layout_width="match_parent"
+                     android:layout_height="match_parent"
+                     android:background="@color/deep_navy"
+                     app:layout_constraintEnd_toEndOf="parent"
+                     app:layout_constraintHorizontal_bias="0.5"
+                     app:layout_constraintStart_toStartOf="parent">
+
+                     <RadioGroup
+                         android:id="@+id/mainActivity_radioGroup"
+                         android:layout_width="wrap_content"
+                         android:layout_height="35dp"
+                         android:layout_marginStart="5dp"
+                         android:layout_marginTop="20dp"
+                         android:orientation="horizontal"
+                         android:background="@drawable/background_1"
+                         app:layout_constraintEnd_toStartOf="@+id/mainActivityMoreGraphs_imageView"
+                         app:layout_constraintHorizontal_bias="0.041"
+                         app:layout_constraintStart_toStartOf="parent"
+                         app:layout_constraintTop_toTopOf="parent">
+
+                         <RadioButton
+                             android:id="@+id/mainActivityAccelerometer_radioButton"
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:layout_margin="5dp"
+                             android:fontFamily="@font/marvel"
+                             android:text="@string/accelerometer"
+                             android:textColor="@color/white" />
+
+                         <RadioButton
+                             android:id="@+id/mainActivityGyroscope_radioButton"
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:layout_margin="5dp"
+                             android:fontFamily="@font/marvel"
+                             android:text="@string/gyroscope"
+                             android:textColor="@color/white"/>
+
+                     </RadioGroup>
+
+                     <ImageView
+                         android:id="@+id/mainActivityMoreGraphs_imageView"
+                         android:layout_width="25dp"
+                         android:layout_height="25dp"
+                         android:layout_marginTop="0dp"
+                         android:layout_marginEnd="10dp"
+                         android:importantForAccessibility="no"
+                         android:background="@drawable/background_1"
+                         android:src="@drawable/round_add_24"
+                         app:layout_constraintEnd_toEndOf="parent"
+                         app:layout_constraintTop_toTopOf="@+id/mainActivity_radioGroup" />
+
+                     <com.google.android.material.textfield.TextInputLayout
+                         android:id="@+id/mainActivityExerciseTypeDropDownTextInputLayout"
+                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                         android:layout_width="120dp"
+                         android:layout_height="wrap_content"
+                         android:layout_marginTop="30dp"
+                         android:hint="@string/exercise_type"
+                         android:textColorHint="@color/white"
+                         app:boxCornerRadiusTopStart="10dp"
+                         app:boxCornerRadiusBottomEnd="10dp"
+                         app:boxCornerRadiusBottomStart="10dp"
+                         app:boxCornerRadiusTopEnd="10dp"
+                         app:endIconCheckable="true"
+                         app:endIconMode="dropdown_menu"
+                         app:endIconTint="@color/white"
+                         app:layout_constraintEnd_toStartOf="@+id/mainActivityAccelerationDropDownTextInputLayout"
+                         app:layout_constraintHorizontal_bias="0.5"
+                         app:layout_constraintStart_toStartOf="parent"
+                         app:layout_constraintTop_toBottomOf="@+id/mainActivity_radioGroup">
+
+                         <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                             android:id="@+id/mainActivityExerciseTypeDropDownAutoCompleteTextView"
+                             android:layout_width="match_parent"
+                             android:layout_height="55dp"
+                             android:autoSizeMaxTextSize="11sp"
+                             android:autoSizeMinTextSize="07sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"
+                             android:inputType="none"
+                             android:padding="5dp"
+                             android:textColor="@color/white"
+                             app:simpleItems="@array/exercises_array" />
+
+                     </com.google.android.material.textfield.TextInputLayout>
+
+                     <com.google.android.material.textfield.TextInputLayout
+                         android:id="@+id/mainActivityExerciseDateTextInputLayout"
+                         android:layout_width="120dp"
+                         android:layout_height="wrap_content"
+                         android:hint="@string/date_format"
+                         android:textColorHint="@color/white"
+                         app:hintEnabled="true"
+                         app:hintTextColor="@color/white"
+                         app:boxCornerRadiusTopStart="10dp"
+                         app:boxCornerRadiusBottomEnd="10dp"
+                         app:boxCornerRadiusBottomStart="10dp"
+                         app:boxCornerRadiusTopEnd="10dp"
+                         app:layout_constraintEnd_toEndOf="parent"
+                         app:layout_constraintHorizontal_bias="0.5"
+                         app:layout_constraintStart_toEndOf="@+id/mainActivityAccelerationDropDownTextInputLayout"
+                         app:layout_constraintTop_toTopOf="@+id/mainActivityAccelerationDropDownTextInputLayout">
+
+                         <com.google.android.material.textfield.TextInputEditText
+                             android:id="@+id/mainActivityExerciseDateTextInputEditText"
+                             android:layout_width="match_parent"
+                             android:layout_height="55dp"
+                             android:padding="3dp"
+                             android:autoSizeMaxTextSize="10sp"
+                             android:autoSizeMinTextSize="7sp"
+                             android:autoSizeStepGranularity="0.5sp"
+                             android:autoSizeTextType="uniform"
+                             android:inputType="none"
+                             android:textColor="@color/white" />
+
+                     </com.google.android.material.textfield.TextInputLayout>
+
+                     <com.google.android.material.textfield.TextInputLayout
+                         android:id="@+id/mainActivityAccelerationDropDownTextInputLayout"
+                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                         android:layout_width="100dp"
+                         android:layout_height="wrap_content"
+                         android:autoSizeMaxTextSize="16sp"
+                         android:autoSizeMinTextSize="12sp"
+                         android:autoSizeStepGranularity="1sp"
+                         android:autoSizeTextType="uniform"
+                         android:hint="@string/direction"
+                         android:textColorHint="@color/white"
+                         app:endIconCheckable="true"
+                         app:endIconMode="dropdown_menu"
+                         app:endIconTint="@color/white"
+                         app:hintTextColor="@color/white"
+                         app:boxCornerRadiusTopStart="10dp"
+                         app:boxCornerRadiusBottomEnd="10dp"
+                         app:boxCornerRadiusBottomStart="10dp"
+                         app:boxCornerRadiusTopEnd="10dp"
+                         app:layout_constraintEnd_toStartOf="@+id/mainActivityExerciseDateTextInputLayout"
+                         app:layout_constraintHorizontal_bias="0.5"
+                         app:layout_constraintStart_toEndOf="@+id/mainActivityExerciseTypeDropDownTextInputLayout"
+                         app:layout_constraintTop_toTopOf="@+id/mainActivityExerciseTypeDropDownTextInputLayout">
+
+                         <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                             android:id="@+id/mainActivityAccelerationDropDownAutoCompleteTextView"
+                             android:layout_width="match_parent"
+                             android:layout_height="55dp"
+                             android:inputType="none"
+                             android:padding="1dp"
+                             android:textColor="@color/white"
+                             app:simpleItems="@array/directions_array" />
+
+
+                     </com.google.android.material.textfield.TextInputLayout>
+
+                     <com.github.mikephil.charting.charts.LineChart
+                         android:id="@+id/mainActivityLineChartView"
+                         android:layout_width="match_parent"
+                         android:layout_height="300dp"
+                         android:layout_marginTop="20dp"
+                         android:backgroundTint="@color/deep_navy"
+                         app:layout_constraintEnd_toEndOf="parent"
+                         app:layout_constraintHorizontal_bias="1.0"
+                         app:layout_constraintStart_toStartOf="parent"
+                         app:layout_constraintTop_toBottomOf="@+id/mainActivityAccelerationDropDownTextInputLayout" />
+
+                     <com.google.android.material.button.MaterialButton
+                         android:id="@+id/mainActivityPlotGraph_materialButton"
+                         android:layout_width="100dp"
+                         android:layout_height="50dp"
+                         android:layout_marginTop="15dp"
+                         android:text="Plot"
+                         app:layout_constraintEnd_toStartOf="@+id/mainActivityClearPlotGraph_materialButton"
+                         app:layout_constraintHorizontal_bias="0.5"
+                         app:layout_constraintStart_toStartOf="parent"
+                         app:layout_constraintTop_toBottomOf="@+id/mainActivityLineChartView" />
+
+                     <com.google.android.material.button.MaterialButton
+                         android:id="@+id/mainActivityClearPlotGraph_materialButton"
+                         android:layout_width="100dp"
+                         android:layout_height="50dp"
+                         android:text="Clear"
+                         android:textColor="@color/white"
+                         app:layout_constraintBottom_toBottomOf="@+id/mainActivityPlotGraph_materialButton"
+                         app:layout_constraintEnd_toEndOf="parent"
+                         app:layout_constraintHorizontal_bias="0.5"
+                         app:layout_constraintStart_toEndOf="@+id/mainActivityPlotGraph_materialButton"
+                         app:layout_constraintTop_toTopOf="@+id/mainActivityPlotGraph_materialButton" />
+
+
+                 </androidx.constraintlayout.widget.ConstraintLayout>
+             </androidx.cardview.widget.CardView>
+
+
+             <!-- <TextView
+                 android:id="@+id/mainActivityIntro_textView"
+                 android:layout_width="match_parent"
+                 android:layout_height="100dp"
+                 android:autoSizeMaxTextSize="25sp"
+                 android:autoSizeMinTextSize="20sp"
+                 android:autoSizeStepGranularity="1sp"
+                 android:autoSizeTextType="uniform"
+                 android:fontFamily="@font/epilogue"
+                 android:gravity="center"
+                 android:padding="10dp"
+                 android:text="It's a Bright Day for Exercising"
+                 android:textColor="@color/black"
+                 android:textFontWeight="600"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toTopOf="parent" />
+
+
+
+             <TextView
+                 android:id="@+id/mainActivityTimer_textView"
+                 android:layout_width="match_parent"
+                 android:layout_height="50dp"
+                 android:layout_marginTop="15dp"
+                 android:fontFamily="@font/muli"
+                 android:gravity="center"
+                 android:textColor="@color/black"
+                 android:textSize="25sp"
+                 android:textFontWeight="500"
+                 android:text="00 : 00 : 00"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivity_calenderView" />
+
+             <com.applandeo.materialcalendarview.CalendarView
+                 android:id="@+id/mainActivity_calenderView"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 app:eventsEnabled="true"
+                 app:type="many_days_picker"
+                 app:swipeEnabled="true"
+                 app:selectionColor="@color/Red"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityIntro_textView" />
+
+             <com.google.android.material.chip.ChipGroup
+                 android:id="@+id/mainActivity_chipGroup"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_marginTop="15dp"
+                 android:background="@color/white"
+                 android:paddingStart="10dp"
+                 android:paddingEnd="10dp"
+                 app:chipSpacing="5dp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityTimer_textView"
+                 app:singleSelection="true">
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityWeights_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/weights"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityFlapJacks_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/flap_jack"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityMountainClimbers_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/mt_climbers"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityBacks_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/backs"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityPushUp_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/push_up"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivitySitUp_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/sit_up"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityPlank_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/plank"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivitySkipping_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/skipping"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityWalking_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/walking"
+                     android:textColor="@color/black"
+                     android:background="@color/white"
+                     app:chipIconVisible="true" />
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityStopExercise_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/stop_exercise"
+                     android:textColor="@color/black"
+                     android:background="@color/white"/>
+
+                 <com.google.android.material.chip.Chip
+                     android:id="@+id/mainActivityResetTimer_chip"
+                     style="@style/Widget.Material3.Chip.Filter"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:fontFamily="@font/epilogue"
+                     android:text="@string/reset_timer"
+                     android:textColor="@color/black"
+                     android:background="@color/white"/>
+
+             </com.google.android.material.chip.ChipGroup>
+
+             <com.google.android.material.textfield.TextInputLayout
+                 android:id="@+id/mainActivityExerciseDescription_textInputLayout"
+                 android:layout_width="350dp"
+                 android:layout_height="wrap_content"
+                 android:layout_marginTop="15dp"
+                 android:hint="@string/description"
+                 android:importantForAutofill="no"
+                 app:endIconCheckable="true"
+                 app:endIconDrawable="@drawable/round_add_24"
+                 app:endIconMode="custom"
+                 app:endIconScaleType="center"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityExerciseDescription_textView">
+
+                 <com.google.android.material.textfield.TextInputEditText
+                     android:id="@+id/mainActivityExerciseDescription_textInputEditText"
+                     android:layout_width="match_parent"
+                     android:layout_height="200dp"
+                     android:fontFamily="@font/epilogue"
+                     android:gravity="start|center"
+                     android:padding="4dp"
+                     android:textColor="@color/black" />
+
+             </com.google.android.material.textfield.TextInputLayout>
+
+             <TextView
+                 android:id="@+id/mainActivityBluetoothExerciseStatus_textView"
+                 android:layout_width="match_parent"
+                 android:layout_height="50dp"
+                 android:autoSizeMaxTextSize="20sp"
+                 android:autoSizeMinTextSize="18sp"
+                 android:autoSizeStepGranularity="1sp"
+                 android:autoSizeTextType="uniform"
+                 android:fontFamily="@font/epilogue"
+                 android:gravity="center"
+                 android:text="@string/not_connected_no_exercise"
+                 android:textColor="@color/black"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="1.0"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivity_chipGroup" />
+
+             <TextView
+                 android:id="@+id/mainActivityExerciseDescription_textView"
+                 android:layout_width="match_parent"
+                 android:layout_height="40dp"
+                 android:layout_marginTop="20dp"
+                 android:autoSizeMaxTextSize="24sp"
+                 android:autoSizeMinTextSize="18sp"
+                 android:autoSizeStepGranularity="1sp"
+                 android:autoSizeTextType="uniform"
+                 android:fontFamily="@font/epilogue"
+                 android:gravity="center"
+                 android:text="@string/describe_your_exercise"
+                 android:textColor="@color/black"
+                 android:textFontWeight="500"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="0.0"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityBluetoothStatus_imageView" />
+
+             <ImageView
+                 android:id="@+id/mainActivityBluetoothStatus_imageView"
+                 android:layout_width="50dp"
+                 android:layout_height="50dp"
+                 android:layout_marginStart="180dp"
+                 android:layout_marginEnd="181dp"
+                 android:scaleType="fitCenter"
+                 android:src="@drawable/round_bluetooth_disabled_24"
+                 app:layout_constraintEnd_toEndOf="@+id/mainActivityBluetoothExerciseStatus_textView"
+                 app:layout_constraintStart_toStartOf="@+id/mainActivityBluetoothExerciseStatus_textView"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityBluetoothExerciseStatus_textView"
+                 tools:ignore="ContentDescription" />
+
+             <com.github.mikephil.charting.charts.LineChart
+                 android:id="@+id/mainActivityLineChartView"
+                 android:layout_width="370dp"
+                 android:layout_height="300dp"
+                 android:layout_marginTop="20dp"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="0.488"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityExerciseDateTextInputLayout" />
+
+
+             <TextView
+                 android:id="@+id/mainActivityFitnessGraphTitle_textView"
+                 android:layout_width="match_parent"
+                 android:layout_height="60dp"
+                 android:layout_marginTop="15dp"
+                 android:autoSizeMaxTextSize="25sp"
+                 android:autoSizeMinTextSize="20sp"
+                 android:autoSizeStepGranularity="1sp"
+                 android:autoSizeTextType="uniform"
+                 android:fontFamily="@font/epilogue"
+                 android:gravity="center"
+                 android:padding="10dp"
+                 android:text="Fitness Exercise Graph"
+                 android:textColor="@color/black"
+                 android:textFontWeight="600"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="1.0"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityExerciseDescription_textInputLayout" />
+
+             <com.google.android.material.button.MaterialButton
+                 android:id="@+id/mainActivityPlotGraph_materialButton"
+                 android:layout_width="100dp"
+                 android:layout_height="50dp"
+                 android:layout_marginTop="20dp"
+                 android:layout_marginBottom="100dp"
+                 android:text="Plot"
+                 android:textColor="@color/white"
+                 app:layout_constraintBottom_toBottomOf="parent"
+                 app:layout_constraintEnd_toEndOf="@+id/mainActivityLineChartView"
+                 app:layout_constraintHorizontal_bias="0.037"
+                 app:layout_constraintStart_toStartOf="@+id/mainActivityLineChartView"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityLineChartView"
+                 app:layout_constraintVertical_bias="0.0" />
+
+             <com.google.android.material.button.MaterialButton
+                 android:id="@+id/mainActivityClearPlotGraph_materialButton"
+                 android:layout_width="100dp"
+                 android:layout_height="50dp"
+                 android:layout_marginEnd="40dp"
+                 android:text="Clear"
+                 android:textColor="@color/white"
+                 app:layout_constraintBottom_toBottomOf="@+id/mainActivityPlotGraph_materialButton"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintTop_toTopOf="@+id/mainActivityPlotGraph_materialButton" />
+
+
+             <com.google.android.material.textfield.TextInputLayout
+                 android:id="@+id/mainActivityAccelerationDropDownTextInputLayout"
+                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                 android:layout_width="180dp"
+                 android:layout_height="wrap_content"
+                 android:layout_marginEnd="15dp"
+                 android:hint="@string/acceleration_type"
+                 android:autoSizeMaxTextSize="16sp"
+                 android:autoSizeMinTextSize="12sp"
+                 android:autoSizeStepGranularity="1sp"
+                 android:autoSizeTextType="uniform"
+                 app:endIconCheckable="true"
+                 app:endIconMode="dropdown_menu"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintTop_toTopOf="@+id/mainActivityExerciseTypeDropDownTextInputLayout">
+
+                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                     android:id="@+id/mainActivityAccelerationDropDownAutoCompleteTextView"
+                     android:layout_width="match_parent"
+                     android:layout_height="55dp"
+                     android:inputType="none"
+                     android:padding="1dp"
+                     android:textColor="@color/black"
+                     app:simpleItems="@array/acceleration_array" />
+
+             </com.google.android.material.textfield.TextInputLayout>
+
+             <com.google.android.material.textfield.TextInputLayout
+                 android:id="@+id/mainActivityExerciseTypeDropDownTextInputLayout"
+                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                 android:layout_width="180dp"
+                 android:layout_height="wrap_content"
+                 android:layout_marginStart="20dp"
+                 android:layout_marginTop="10dp"
+                 android:hint="@string/exercise_type"
+                 app:endIconCheckable="true"
+                 app:endIconMode="dropdown_menu"
+                 app:layout_constraintStart_toStartOf="@+id/mainActivityFitnessGraphTitle_textView"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityFitnessGraphTitle_textView">
+
+                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                     android:id="@+id/mainActivityExerciseTypeDropDownAutoCompleteTextView"
+                     android:layout_width="match_parent"
+                     android:layout_height="55dp"
+                     android:inputType="none"
+                     android:padding="5dp"
+                     android:textColor="@color/black"
+                     app:simpleItems="@array/exercises_array" />
+
+             </com.google.android.material.textfield.TextInputLayout>
+
+             <com.google.android.material.textfield.TextInputLayout
+                 android:id="@+id/mainActivityExerciseDateTextInputLayout"
+                 android:layout_width="200dp"
+                 android:layout_height="wrap_content"
+                 android:layout_marginStart="100dp"
+                 android:layout_marginTop="20dp"
+                 android:hint="@string/date"
+                 app:helperText="Format: dd/mm/yyyy"
+                 app:helperTextEnabled="true"
+                 app:hintEnabled="true"
+                 app:layout_constraintEnd_toEndOf="@+id/mainActivityAccelerationDropDownTextInputLayout"
+                 app:layout_constraintHorizontal_bias="0.0"
+                 app:layout_constraintStart_toStartOf="@+id/mainActivityExerciseTypeDropDownTextInputLayout"
+                 app:layout_constraintTop_toBottomOf="@+id/mainActivityExerciseTypeDropDownTextInputLayout">
+
+                 <com.google.android.material.textfield.TextInputEditText
+                     android:id="@+id/mainActivityExerciseDateTextInputEditText"
+                     android:layout_width="match_parent"
+                     android:layout_height="50dp"
+                     android:padding="3dp"
+                     android:textColor="@color/black" />
+
+             </com.google.android.material.textfield.TextInputLayout> -->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>
