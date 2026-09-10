@@ -20,6 +20,8 @@ import androidx.annotation.Nullable;
 
 import com.atom.bluetoothfitnessapplication.utilities.Constants;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +41,10 @@ public class BluetoothLeService extends Service {
     private static final int STATE_CONNECTED = 2;
 
     private int connectionState;
+
+    public boolean isConnected() {
+        return connectionState == STATE_CONNECTED;
+    }
 
     private final Binder binder = new LocalBinder();
     private BluetoothAdapter bluetoothAdapter;
@@ -205,6 +211,7 @@ public class BluetoothLeService extends Service {
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
+        intent.setPackage(getPackageName());
         sendBroadcast(intent);
     }
 
@@ -212,14 +219,16 @@ public class BluetoothLeService extends Service {
                                  final BluetoothGattCharacteristic characteristic)
     {
         final Intent intent = new Intent(action);
+        intent.setPackage(getPackageName());
 
         //Use an if statement to check the characteristic and get data bytes from it!
 
         if(UUID.fromString(Constants.RP2040_CHARACTERISTICS_UUID)
                 .equals(characteristic.getUuid()))
         {
+            byte[] value = characteristic.getValue();
 
-            float[] arraySensorData = getArraySensorData(characteristic);
+            float[] arraySensorData = getArraySensorData(value);
 
             intent.putExtra(EXTRA_SENSOR_DATA, arraySensorData);
 
@@ -229,25 +238,31 @@ public class BluetoothLeService extends Service {
     }
 
     @NonNull
-    private float[] getArraySensorData(BluetoothGattCharacteristic characteristic)
+    private float[] getArraySensorData(byte[] bytes)
     {
-        byte[] value = characteristic.getValue();
+        if(bytes == null || bytes.length < 12) {
 
-        short accX = (short) ((value[0] & 0xFF) << 8 | (value[1] & 0xFF));
-        short accY = (short) ((value[2] & 0xFF) << 8 | (value[3] & 0xFF));
-        short accZ = (short) ((value[4] & 0xFF) << 8 | (value[5] & 0xFF));
-        short gyroX = (short) ((value[6] & 0xFF) << 8 | (value[7] & 0xFF));
-        short gyroY = (short) ((value[8] & 0xFF) << 8 | (value[9] & 0xFF));
-        short gyroZ = (short) ((value[10] & 0xFF) << 8 | (value[11] & 0xFF));
+            Log.e(TAG, "getArraySensorData: Received invalid data length: " +
+                    (bytes != null ? bytes.length : 0));
 
-        float acc_x = accX / 100.0f;
-        float acc_y = accY / 100.0f;
-        float acc_z = accZ / 100.0f;
-        float gyro_x = gyroX / 100.0f;
-        float gyro_y = gyroY / 100.0f;
-        float gyro_z = gyroZ / 100.0f;
+            return new float[]{0f, 0f, 0f, 0f, 0f, 0f};
+        }
 
-        return new float[]{acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z};
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+        float ax = buffer.getShort() / 100.0f;
+        float ay = buffer.getShort() / 100.0f;
+        float az = buffer.getShort() / 100.0f;
+
+        float gx = buffer.getShort() / 100.0f;
+        float gy = buffer.getShort() / 100.0f;
+        float gz = buffer.getShort() / 100.0f;
+
+        Log.d(TAG, "Decoded: Ax: " + ax + " | Ay: " + ay + " | Az: " +
+                az + " | Gx: " + gx + " | Gy: " + gy + " | Gz: " + gz);
+
+        return new float[] {ax, ay, az, gx, gy, gz};
 
     }
 

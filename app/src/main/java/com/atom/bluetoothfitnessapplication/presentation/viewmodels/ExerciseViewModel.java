@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.ViewModel;
 
 import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
@@ -15,21 +16,29 @@ import com.atom.bluetoothfitnessapplication.data.models.SitUps;
 import com.atom.bluetoothfitnessapplication.data.models.Skipping;
 import com.atom.bluetoothfitnessapplication.data.models.Walking;
 import com.atom.bluetoothfitnessapplication.data.models.Weights;
+import com.atom.bluetoothfitnessapplication.data.models.WorkoutSession;
+import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
 import com.atom.bluetoothfitnessapplication.data.repositories.ExerciseRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 
-public class ExerciseViewModel extends AndroidViewModel {
+import javax.inject.Inject;
+
+public class ExerciseViewModel extends ViewModel {
 
     private final ExerciseRepository exerciseRepository;
 
-    public ExerciseViewModel(@NonNull Application application) {
-        super(application);
-        this.exerciseRepository = new ExerciseRepository(application);
+    private final WorkoutSession activeSession;
+
+    @Inject
+    public ExerciseViewModel(@NonNull ExerciseRepository exerciseRepository, @NonNull WorkoutSession workoutSession) {
+        this.exerciseRepository = exerciseRepository;
+        this.activeSession = workoutSession;
     }
 
     public Observable<List<Walking>> getAllWalkingData() {
@@ -165,5 +174,22 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     public Completable insertExerciseDescription(ExerciseDescription exerciseDescription){
         return exerciseRepository.insertExerciseDescription(exerciseDescription);
+    }
+
+
+    public WorkoutSession getActiveSession() {
+        return activeSession;
+    }
+
+    public Single<List<WorkoutSummary>> getAllRecentSummaries(int limit) {
+        return exerciseRepository.getAllRecentSummaries(limit);
+    }
+
+    public Single<List<WorkoutSummary>> getPastSummaries(String exerciseType, int limit) {
+        return exerciseRepository.getPastSummaries(exerciseType, limit);
+    }
+
+    public Completable insertWorkoutSummary(WorkoutSummary workoutSummary) {
+        return exerciseRepository.insertWorkoutSummary(workoutSummary);
     }
 }

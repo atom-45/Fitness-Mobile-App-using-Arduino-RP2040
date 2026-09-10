@@ -17,8 +17,11 @@ import com.atom.bluetoothfitnessapplication.data.models.SitUps;
 import com.atom.bluetoothfitnessapplication.data.models.Skipping;
 import com.atom.bluetoothfitnessapplication.data.models.Walking;
 import com.atom.bluetoothfitnessapplication.data.models.Weights;
+import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
@@ -28,6 +31,7 @@ public class ExerciseRepository {
 
     private final ExerciseDAO exerciseDAO;
 
+    @Inject
     public ExerciseRepository(@NonNull Application application) {
         this.exerciseDAO = FitnessExerciseDatabase
                 .getInstance(application.getApplicationContext())
@@ -167,6 +171,18 @@ public class ExerciseRepository {
 
     public Completable insertExerciseDescription(ExerciseDescription exerciseDescription) {
         return exerciseDAO.insertExerciseDescription(exerciseDescription);
+    }
+
+    public Single<List<WorkoutSummary>> getAllRecentSummaries(int limit) {
+        return exerciseDAO.getAllRecentSummaries(limit);
+    }
+
+    public Single<List<WorkoutSummary>> getPastSummaries(String exerciseType, int limit) {
+        return exerciseDAO.getPastSummaries(exerciseType, limit);
+    }
+
+    public Completable insertWorkoutSummary(WorkoutSummary workoutSummary) {
+        return exerciseDAO.insertWorkoutSummary(workoutSummary);
     }
 
 }

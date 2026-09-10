@@ -22,11 +22,13 @@ import com.atom.bluetoothfitnessapplication.data.models.SitUps;
 import com.atom.bluetoothfitnessapplication.data.models.Skipping;
 import com.atom.bluetoothfitnessapplication.data.models.Walking;
 import com.atom.bluetoothfitnessapplication.data.models.Weights;
+import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
 
 @Database(entities = {AccelerometerData.class, ExerciseDescription.class,
         Weights.class, Skipping.class, PushUp.class, Backs.class,
-        MountainClimbers.class, Flapjacks.class, SitUps.class, Walking.class, Plank.class} ,
-        version = 2, exportSchema = false)
+        MountainClimbers.class, Flapjacks.class, SitUps.class, Walking.class, Plank.class,
+        WorkoutSummary.class} ,
+        version = 4, exportSchema = false)
 public abstract class FitnessExerciseDatabase extends RoomDatabase {
 
     private static volatile FitnessExerciseDatabase instance;
@@ -39,7 +41,7 @@ public abstract class FitnessExerciseDatabase extends RoomDatabase {
                 if (instance==null) {
                     instance = Room.databaseBuilder(context, FitnessExerciseDatabase.class,
                             "fitness_database")
-                            .addMigrations(MIGRATION_1_2)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                             .build();
                 }
             }
@@ -75,7 +77,20 @@ public abstract class FitnessExerciseDatabase extends RoomDatabase {
     static final Migration MIGRATION_2_3 = new Migration(2,3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase supportSQLiteDatabase) {
+            supportSQLiteDatabase.execSQL("CREATE TABLE IF NOT EXISTS `workout_summaries` " +
+                    "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`exercise_type` TEXT, `rep_count` INTEGER NOT NULL, " +
+                    "`max_power` REAL NOT NULL, `avg_power` REAL NOT NULL, " +
+                    "`consistency` REAL NOT NULL, `cadence` REAL NOT NULL, " +
+                    "`duration` INTEGER NOT NULL, `timestamp` TEXT)");
+        }
+    };
 
+    static final Migration MIGRATION_3_4 = new Migration(3,4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase supportSQLiteDatabase) {
+            supportSQLiteDatabase.execSQL("ALTER TABLE `workout_summaries` ADD COLUMN `stability_score` REAL NOT NULL DEFAULT 0.0");
+            supportSQLiteDatabase.execSQL("ALTER TABLE `workout_summaries` ADD COLUMN `symmetry_score` REAL NOT NULL DEFAULT 0.0");
         }
     };
 }

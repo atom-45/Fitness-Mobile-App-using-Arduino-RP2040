@@ -16,6 +16,7 @@ import com.atom.bluetoothfitnessapplication.data.models.SitUps;
 import com.atom.bluetoothfitnessapplication.data.models.Skipping;
 import com.atom.bluetoothfitnessapplication.data.models.Walking;
 import com.atom.bluetoothfitnessapplication.data.models.Weights;
+import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
 
 import java.util.List;
 
@@ -122,4 +123,13 @@ public interface ExerciseDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertExerciseDescription(ExerciseDescription exerciseDescription);
+
+    @Query("SELECT * FROM workout_summaries ORDER BY id DESC LIMIT :limit")
+    Single<List<WorkoutSummary>> getAllRecentSummaries(int limit);
+
+    @Query("SELECT * FROM workout_summaries WHERE exercise_type = :exerciseType ORDER BY id DESC LIMIT :limit")
+    Single<List<WorkoutSummary>> getPastSummaries(String exerciseType, int limit);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertWorkoutSummary(WorkoutSummary workoutSummary);
 }
