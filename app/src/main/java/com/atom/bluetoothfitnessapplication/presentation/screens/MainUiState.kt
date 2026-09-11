@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.atom.bluetoothfitnessapplication.R
+import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats
 import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary
 import com.github.mikephil.charting.data.BarData
 
@@ -18,10 +19,12 @@ class MainUiState {
     var isRepsTrend by mutableStateOf(true)
 
     var isBluetoothConnected by mutableStateOf(false)
+    var isScanning by mutableStateOf(false)
 
     // New analysis state
     var liveRepCount by mutableIntStateOf(0)
     var currentWorkoutSummary by mutableStateOf<WorkoutSummary?>(null)
     var pastSummaries by mutableStateOf<List<WorkoutSummary>>(emptyList())
     var allRecentSummaries by mutableStateOf<List<WorkoutSummary>>(emptyList())
+    var exerciseFrequencyStats by mutableStateOf<List<ExerciseStats>>(emptyList())
 }

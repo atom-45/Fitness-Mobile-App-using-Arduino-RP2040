@@ -8,6 +8,7 @@ import androidx.room.Query;
 
 import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
+import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
@@ -129,6 +130,11 @@ public interface ExerciseDAO {
 
     @Query("SELECT * FROM workout_summaries WHERE exercise_type = :exerciseType ORDER BY id DESC LIMIT :limit")
     Single<List<WorkoutSummary>> getPastSummaries(String exerciseType, int limit);
+
+    @Query("SELECT exercise_type, COUNT(*) as total_sessions, " +
+           "SUM(CASE WHEN timestamp >= date('now', '-7 days') THEN 1 ELSE 0 END) as weekly_sessions, " +
+           "MAX(timestamp) as last_date FROM workout_summaries GROUP BY exercise_type")
+    Single<List<ExerciseStats>> getExerciseFrequencyStats();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertWorkoutSummary(WorkoutSummary workoutSummary);

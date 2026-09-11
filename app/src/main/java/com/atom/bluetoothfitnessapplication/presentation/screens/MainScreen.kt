@@ -10,12 +10,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,12 +37,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.atom.bluetoothfitnessapplication.R
+import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats
 import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary
 import com.atom.bluetoothfitnessapplication.presentation.theme.*
 import com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,8 +73,11 @@ fun MainScreen(
     currentSummary: WorkoutSummary?,
     pastSummaries: List<WorkoutSummary>,
     isBluetoothConnected: Boolean,
+    isScanning: Boolean,
+    onReconnect: () -> Unit,
     barData: BarData?,
-    recentActivity: List<WorkoutSummary>
+    recentActivity: List<WorkoutSummary>,
+    exerciseStats: List<ExerciseStats>
 ) {
     Scaffold(
         topBar = {
@@ -80,6 +91,15 @@ fun MainScreen(
                     )
                 },
                 actions = {
+                    if (!isBluetoothConnected && !isScanning) {
+                        IconButton(onClick = onReconnect) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Reconnect",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                     BluetoothStatusIndicator(status = bluetoothStatus, iconRes = bluetoothIconRes)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -96,8 +116,35 @@ fun MainScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            if (isScanning) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().height(4.dp),
+                            color = MintGreen,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        Text(
+                            text = "Searching for sensor...",
+                            fontFamily = Marvel,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            }
+
             item {
                 WelcomeSection()
+            }
+
+            // Moved Multi-view pager here (Above Stopwatch, under text)
+            item {
+                HistorySection(recentActivity, exerciseStats)
             }
 
             item {
@@ -138,10 +185,6 @@ fun MainScreen(
                     isRepsTrend = isAccelerometer,
                     onTrendTypeChange = onPlotTypeChange
                 )
-            }
-
-            item {
-                RecentActivitySection(recentActivity)
             }
         }
     }
@@ -214,7 +257,7 @@ fun BluetoothStatusIndicator(status: String, iconRes: Int) {
             modifier = Modifier.size(18.dp),
             tint = color
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(6.6.dp))
         Text(
             text = status,
             fontFamily = Marvel,
@@ -673,35 +716,201 @@ fun InsightsSection(
 }
 
 @Composable
-fun RecentActivitySection(activity: List<WorkoutSummary>) {
+fun HistorySection(recentActivity: List<WorkoutSummary>, exerciseStats: List<ExerciseStats>) {
+    val pagerState = rememberPagerState(pageCount = { 2 }) // Reduced to 2 tabs
+    val scope = rememberCoroutineScope()
+    
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Recent Activity",
-            fontFamily = Marvel,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-        
-        if (activity.isEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            ) {
-                Text(
-                    "No sessions yet. Start training!",
-                    modifier = Modifier.padding(24.dp),
-                    fontFamily = Marvel,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
+        TabRow(
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.primary,
+            divider = {},
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-        } else {
-            activity.take(5).forEach { summary ->
-                RecentActivityItem(summary)
-                Spacer(modifier = Modifier.height(10.dp))
+        ) {
+            Tab(
+                selected = pagerState.currentPage == 0,
+                onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+                text = { Text("Timeline", fontFamily = Marvel) }
+            )
+            Tab(
+                selected = pagerState.currentPage == 1,
+                onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                text = { Text("Lifetime Stats", fontFamily = Marvel) }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 250.dp, max = 450.dp),
+            verticalAlignment = Alignment.Top
+        ) { page ->
+            when (page) {
+                0 -> GroupedTimelineList(recentActivity)
+                1 -> ExerciseFrequencyGrid(exerciseStats)
             }
         }
+    }
+}
+
+@Composable
+fun GroupedTimelineList(activity: List<WorkoutSummary>) {
+    if (activity.isEmpty()) {
+        EmptyHistoryState()
+    } else {
+        val grouped = activity.groupBy { it.timestamp.take(10) }
+        Column(modifier = Modifier.fillMaxWidth()) {
+            grouped.forEach { (date, sessions) ->
+                Text(
+                    text = formatDate(date),
+                    fontFamily = Marvel,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                sessions.forEach { summary ->
+                    RecentActivityItem(summary)
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+        }
+    }
+}
+
+private fun formatDate(dateStr: String): String {
+    return try {
+        val date = LocalDate.parse(dateStr.take(10))
+        val now = LocalDate.now()
+        when {
+            date == now -> "Today"
+            date == now.minusDays(1) -> "Yesterday"
+            else -> date.format(DateTimeFormatter.ofPattern("EEE, d MMM"))
+        }
+    } catch (e: Exception) {
+        dateStr
+    }
+}
+
+@Composable
+fun ExerciseFrequencyGrid(stats: List<ExerciseStats>) {
+    if (stats.isEmpty()) {
+        EmptyHistoryState("No workout data yet.")
+    } else {
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(stats) { stat ->
+                FrequencyCard(stat)
+            }
+        }
+    }
+}
+
+@Composable
+fun FrequencyCard(stat: ExerciseStats) {
+    Card(
+        modifier = Modifier.width(160.dp).height(180.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxSize(),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier.size(32.dp).clip(CircleShape).background(MintGreen.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, tint = MintGreen, modifier = Modifier.size(16.dp))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stat.exerciseType,
+                    fontFamily = Marvel,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Column {
+                Text(
+                    text = "${stat.totalSessions}",
+                    fontFamily = Marvel,
+                    fontSize = 28.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "Total Sessions",
+                    fontFamily = Marvel,
+                    fontSize = 11.sp,
+                    color = Color.Gray
+                )
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "${stat.weeklySessions}",
+                        fontFamily = Marvel,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "This Week",
+                        fontFamily = Marvel,
+                        fontSize = 10.sp,
+                        color = Color.Gray
+                    )
+                }
+                
+                Text(
+                    text = formatDate(stat.lastDate).uppercase(),
+                    fontFamily = Marvel,
+                    fontSize = 9.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptyHistoryState(message: String = "No sessions yet. Start training!") {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+    ) {
+        Text(
+            message,
+            modifier = Modifier.padding(24.dp).fillMaxWidth(),
+            fontFamily = Marvel,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -893,7 +1102,7 @@ fun AnimatedPillToggle(
         modifier = modifier
             .height(45.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF2D2D2D)) // Dark gray container from screenshot
+            .background(MaterialTheme.colorScheme.surfaceVariant) 
             .clickable { onToggle(!isSelected) }
             .padding(4.dp)
     ) {
@@ -911,7 +1120,7 @@ fun AnimatedPillToggle(
                 .width(pillWidth)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF1A1A1A)) // Blackish background for selection
+                .background(MaterialTheme.colorScheme.surface)
         )
         
         // Labels
@@ -923,7 +1132,7 @@ fun AnimatedPillToggle(
                 fontFamily = Marvel,
                 fontSize = 16.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) MintGreen else Color.Gray.copy(alpha = 0.8f)
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = rightLabel,
@@ -932,7 +1141,7 @@ fun AnimatedPillToggle(
                 fontFamily = Marvel,
                 fontSize = 16.sp,
                 fontWeight = if (!isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (!isSelected) MintGreen else Color.Gray.copy(alpha = 0.8f)
+                color = if (!isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -992,8 +1201,11 @@ fun MainScreenPreview() {
                 )
             ),
             isBluetoothConnected = true,
+            isScanning = false,
+            onReconnect = {},
             barData = null,
-            recentActivity = emptyList()
+            recentActivity = emptyList(),
+            exerciseStats = emptyList()
         )
     }
 }

@@ -2,7 +2,6 @@ package com.atom.bluetoothfitnessapplication.presentation.widgets
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -22,9 +21,11 @@ import androidx.glance.unit.ColorProvider
 import com.atom.bluetoothfitnessapplication.R
 import com.atom.bluetoothfitnessapplication.utilities.Constants
 
+import java.util.Locale
+
 class PerformanceSnapshotWidget : GlanceAppWidget() {
 
-    override suspend fun provideContent(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
         val prefs = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
         val type = prefs.getString(Constants.KEY_LAST_EXERCISE_TYPE, "No Data") ?: "No Data"
         val value = prefs.getFloat(Constants.KEY_LAST_EXERCISE_VALUE, 0f)
@@ -50,34 +51,34 @@ class PerformanceSnapshotWidget : GlanceAppWidget() {
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = "Last Session",
-                    style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 11.sp)
+                    style = TextStyle(color = ColorProvider(R.color.grey_six), fontSize = 12.sp)
                 )
                 Text(
                     text = type,
                     style = TextStyle(
-                        color = ColorProvider(Color.White),
-                        fontSize = 16.sp,
+                        color = ColorProvider(R.color.white),
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
-                    text = if (value > 0) String.format("%.1f %s", value, unit) else "---",
+                    text = if (value > 0) String.format(Locale.getDefault(), "%.1f %s", value, unit) else "---",
                     style = TextStyle(
-                        color = ColorProvider(Color(0xFFACFFAC)), // MintGreen
-                        fontSize = 14.sp,
+                        color = ColorProvider(R.color.mint_green),
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 if (secondary.isNotEmpty()) {
                     Text(
                         text = secondary,
-                        style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 10.sp)
+                        style = TextStyle(color = ColorProvider(R.color.grey_six), fontSize = 12.sp)
                     )
                 }
             }
 
             Box(
-                modifier = GlanceModifier.size(44.dp),
+                modifier = GlanceModifier.size(56.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Image(

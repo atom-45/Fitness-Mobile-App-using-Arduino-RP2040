@@ -31,6 +31,7 @@ import com.atom.bluetoothfitnessapplication.presentation.theme.FitnessAppTheme
 import com.atom.bluetoothfitnessapplication.presentation.viewmodels.ExerciseViewModel
 import com.atom.bluetoothfitnessapplication.services.BluetoothLeService
 import com.atom.bluetoothfitnessapplication.utilities.Constants
+import com.atom.bluetoothfitnessapplication.utilities.WidgetHelper
 import com.github.mikephil.charting.data.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -110,6 +111,8 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
             when (intent.action) {
                 BluetoothLeService.ACTION_GATT_CONNECTED -> {
                     connected = true
+                    scanning = false
+                    uiState.isScanning = false
                     uiState.isBluetoothConnected = true
                     uiState.bluetoothStatus = getString(R.string.bluetooth_connected)
                     uiState.bluetoothIconRes = R.drawable.round_bluetooth_connected_24
@@ -162,6 +165,12 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
         uiState.selectedExercise = session.selectedExercise
         uiState.liveRepCount = session.liveRepCount
 
+        // Handle Quick Start from Widget
+        intent?.getStringExtra("EXTRA_EXERCISE")?.let { exercise ->
+            uiState.selectedExercise = exercise
+            exerciseViewModel.activeSession.selectedExercise = exercise
+        }
+
         setContent {
             FitnessAppTheme {
                 MainScreen(
@@ -192,14 +201,18 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     currentSummary = uiState.currentWorkoutSummary,
                     pastSummaries = uiState.pastSummaries,
                     isBluetoothConnected = uiState.isBluetoothConnected,
+                    isScanning = uiState.isScanning,
+                    onReconnect = { setupBluetooth() },
                     barData = uiState.barData,
-                    recentActivity = uiState.allRecentSummaries
+                    recentActivity = uiState.allRecentSummaries,
+                    exerciseStats = uiState.exerciseFrequencyStats
                 )
             }
         }
 
         runTimer()
         fetchAllRecentSummaries()
+        fetchExerciseStats()
 
         val gattServiceIntent = Intent(this, BluetoothLeService::class.java)
         bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE)
@@ -305,11 +318,25 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
         compositeDisposable.add(disposable)
     }
 
+    private fun fetchExerciseStats() {
+        val disposable = exerciseViewModel.getExerciseFrequencyStats()
+            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ stats -> uiState.exerciseFrequencyStats = stats }, {})
+        compositeDisposable.add(disposable)
+    }
+
     private fun scanBLEDevice() {
         if (scanning) return
+        uiState.isScanning = true
         val filter = android.bluetooth.le.ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(Constants.RP2040_SERVICE_UUID)).build()
         val settings = android.bluetooth.le.ScanSettings.Builder().setScanMode(android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY).build()
-        handler.postDelayed({ if (scanning) { scanning = false; bluetoothLeScanner?.stopScan(bleScanCallback) } }, SCAN_PERIOD)
+        handler.postDelayed({ 
+            if (scanning) { 
+                scanning = false
+                uiState.isScanning = false
+                bluetoothLeScanner?.stopScan(bleScanCallback) 
+            } 
+        }, SCAN_PERIOD)
         scanning = true
         bluetoothLeScanner?.startScan(listOf(filter), settings, bleScanCallback)
     }
@@ -344,6 +371,25 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ recent -> 
                     uiState.allRecentSummaries = recent
+                    fetchExerciseStats() // Refresh counts
+                    
+                    // Save for Widget
+                    val value = when {
+                        summary.exerciseType == getString(R.string.plank) -> summary.duration.toFloat()
+                        summary.exerciseType == getString(R.string.skipping) || summary.exerciseType == getString(R.string.mt_climbers) -> if (summary.cadence > 0) 1f/summary.cadence else 0f
+                        else -> summary.repCount.toFloat()
+                    }
+                    val unit = when {
+                        summary.exerciseType == getString(R.string.plank) -> "sec"
+                        summary.exerciseType == getString(R.string.skipping) || summary.exerciseType == getString(R.string.mt_climbers) -> "reps/s"
+                        else -> "reps"
+                    }
+                    val secondary = if (summary.exerciseType == getString(R.string.plank)) 
+                        String.format(Locale.getDefault(), "%.0f%% Stab", summary.stabilityScore)
+                        else String.format(Locale.getDefault(), "%.1fG Max", summary.maxPower)
+
+                    WidgetHelper.saveLastExercise(this@MainActivity, summary.exerciseType, value, unit, secondary)
+
                     session.reset()
                     uiState.selectedExercise = null
                     uiState.liveRepCount = 0
@@ -381,6 +427,15 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                 handler.postDelayed(this, 1000)
             }
         })
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra("EXTRA_EXERCISE")?.let { exercise ->
+            uiState.selectedExercise = exercise
+            exerciseViewModel.activeSession.selectedExercise = exercise
+        }
     }
 
     override fun onResume() {

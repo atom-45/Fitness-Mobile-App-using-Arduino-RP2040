@@ -9,6 +9,7 @@ import com.atom.bluetoothfitnessapplication.data.local.daos.ExerciseDAO;
 import com.atom.bluetoothfitnessapplication.data.local.database.FitnessExerciseDatabase;
 import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
+import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
@@ -179,6 +180,10 @@ public class ExerciseRepository {
 
     public Single<List<WorkoutSummary>> getPastSummaries(String exerciseType, int limit) {
         return exerciseDAO.getPastSummaries(exerciseType, limit);
+    }
+
+    public Single<List<ExerciseStats>> getExerciseFrequencyStats() {
+        return exerciseDAO.getExerciseFrequencyStats();
     }
 
     public Completable insertWorkoutSummary(WorkoutSummary workoutSummary) {

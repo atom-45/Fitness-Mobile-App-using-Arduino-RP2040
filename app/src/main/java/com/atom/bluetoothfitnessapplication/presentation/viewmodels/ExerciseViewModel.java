@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
+import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
@@ -187,6 +188,10 @@ public class ExerciseViewModel extends ViewModel {
 
     public Single<List<WorkoutSummary>> getPastSummaries(String exerciseType, int limit) {
         return exerciseRepository.getPastSummaries(exerciseType, limit);
+    }
+
+    public Single<List<ExerciseStats>> getExerciseFrequencyStats() {
+        return exerciseRepository.getExerciseFrequencyStats();
     }
 
     public Completable insertWorkoutSummary(WorkoutSummary workoutSummary) {

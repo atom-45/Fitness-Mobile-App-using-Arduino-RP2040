@@ -63,6 +63,8 @@ dependencies {
     implementation libs.androidx.activity.compose
     implementation libs.androidx.lifecycle.runtime.compose
     implementation libs.androidx.runtime.rxjava3
+    implementation libs.androidx.glance.appwidget
+    implementation libs.androidx.glance.material3
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
 

@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.atom.bluetoothfitnessapplication.utilities.Constants;
+import com.atom.bluetoothfitnessapplication.utilities.WidgetHelper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -60,11 +61,13 @@ public class BluetoothLeService extends Service {
             {
                 connectionState = STATE_CONNECTED;
                 broadcastUpdate(ACTION_GATT_CONNECTED);
+                WidgetHelper.INSTANCE.saveBluetoothStatus(getApplicationContext(), true);
                 bluetoothGatt.discoverServices();
 
             } else if(newState == BluetoothGatt.STATE_DISCONNECTED) {
                 connectionState = STATE_DISCONNECTED;
                 broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                WidgetHelper.INSTANCE.saveBluetoothStatus(getApplicationContext(), false);
             }
         }
 
