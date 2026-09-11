@@ -11,19 +11,24 @@ A modern Android application designed to track and analyze physical exercises us
         *   **Static Stability (Plank)**: Tracks hold time and stillness.
         *   **Dynamic Strength**: Measures power (G-force), symmetry (balance), and tempo.
         *   **Cardio (Skipping)**: Analyzes cadence (reps/sec) and consistency.
+*   **Training Momentum (New)**: A high-level overview of your progress located at the top of the dashboard:
+    *   **Timeline View**: Activity grouped by day (Today, Yesterday, etc.) to track streaks.
+    *   **Lifetime Stats**: Exercise frequency cards showing total sessions and **Weekly Frequency**.
+*   **Home Screen Widgets**:
+    *   **Quick Start**: Check sensor readiness and launch common exercises with one tap.
+    *   **Performance Snapshot**: View your last session's results and progress ring directly on your home screen.
 *   **Performance Trends**: Visualizes progress over the last 10 sessions using an interactive bar chart.
-*   **Activity History**: A searchable feed of recent training sessions with key performance indicators.
-*   **Modern UI**: Built entirely with **Jetpack Compose** following Material 3 design principles with a specialized "Mint & Navy" dark theme.
+*   **Modern UI**: Built entirely with **Jetpack Compose** (Material 3), featuring a theme-aware "Mint & Navy" dark/light palette.
 
 ## 🛠 Technical Stack
 
 *   **UI Framework**: Jetpack Compose (Kotlin)
-*   **Architecture**: Hybrid MVVM with Reactive UI (Java/Kotlin Interop)
+*   **App Widgets**: Jetpack Glance (Compose for Widgets)
+*   **Architecture**: Hybrid MVVM with Reactive UI & Dagger Dependency Injection.
 *   **Local Database**: Room Persistence Library (Version 4)
 *   **Asynchronous Logic**: RxJava 3 for database chaining and sensor processing.
 *   **Networking/BLE**: Bluetooth Low Energy (GATT) with support for Android 12-16 permissions.
-*   **Data Visualization**: MPAndroidChart (Bar & Line charts).
-*   **Dependency Injection**: Dagger 2.
+*   **Data Visualization**: MPAndroidChart.
 
 ## 📱 Screenshots
 
@@ -33,7 +38,7 @@ A modern Android application designed to track and analyze physical exercises us
 
 ### Prerequisites
 *   Android Studio Quail or newer.
-*   Android Device with Bluetooth 5.0 support (API Level 31+ recommended for full feature support).
+*   Android Device with Bluetooth 5.0 support (API Level 31+ recommended).
 *   Compatible BLE Fitness Sensor (RP2040 based).
 
 ### Installation

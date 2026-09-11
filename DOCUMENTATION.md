@@ -5,8 +5,9 @@ The project follows a **Clean Architecture** approach using a hybrid **MVVM (Mod
 
 ### Hybrid Implementation
 - **View Layer**: Implemented in **Kotlin** using **Jetpack Compose**. This allows for high-performance, declarative UI and smooth animations.
-- **Business Logic & Data Layer**: Implemented in **Java**. This includes ViewModels, Repositories, DAOs, and the BLE Service.
-- **State Management**: A specialized `MainUiState` class acts as the bridge, using Compose `mutableStateOf` properties to trigger recomposition when Java-based logic updates the data.
+- **Business Logic & Data Layer**: Implemented in **Java** for stability and legacy support.
+- **Dependency Injection**: Powered by **Dagger 2**. Key components like `WorkoutSession` and `ExerciseRepository` are injected into ViewModels using constructor injection.
+- **Session Management**: A dedicated `WorkoutSession` class encapsulates live workout state, held by `ExerciseViewModel` to survive configuration changes.
 
 ---
 
@@ -15,50 +16,45 @@ The project follows a **Clean Architecture** approach using a hybrid **MVVM (Mod
 ### 2.1 Bluetooth Module (`BluetoothLeService.java`)
 Manages the lifecycle of the connection to the physical fitness sensor.
 - **GATT Profile**: Communicates with a custom RP2040 service.
-- **Broadcast System**: Uses package-targeted broadcasts to ensure data reliability on Android 14+.
-- **Data Format**: Receives a 6-element float array containing [AccX, AccY, AccZ, GyroX, GyroY, GyroZ].
+- **Widget Integration**: Updates shared preferences upon connection/disconnection to keep Home Screen widgets in sync.
 
 ### 2.2 Analysis Engine (`AnalyzerUtils.java`)
 The "brain" of the application that converts raw sensor data into fitness metrics.
-- **Rep Counting**: Uses a peak-detection algorithm with a 1.5G threshold and minimum sample distance to filter out noise.
-- **Stability Score**: Calculated by measuring the variance of the gyroscope magnitude. Lower variance equals a higher stability percentage.
-- **Symmetry Score**: An orientation-agnostic algorithm that compares the "Net Rotational Drift" against "Total Absolute Motion" across all three axes.
-- **Adaptive Logic**: Dynamically switches metrics based on exercise type (e.g., Duration for Planks vs. Reps for Push-ups).
+- **Rep Counting**: Uses a peak-detection algorithm with a 1.5G threshold.
+- **Symmetry Score**: An **orientation-agnostic** algorithm that calculates rotational drift magnitude across all three axes (X, Y, Z).
+- **Adaptive Logic**: Dynamically switches metrics based on exercise type (e.g., Hold Time for Planks, Cadence for Cardio).
 
 ### 2.3 Storage Layer (`FitnessExerciseDatabase.java`)
 - **Version**: 4
-- **Schema**:
-    - `PushUp`, `SitUps`, etc.: Raw sensor data tables for plotting (legacy support).
-    - `workout_summaries`: Stores the finalized results of every session (Rep count, Max Power, Stability, Symmetry, Duration).
-- **Migration**: Includes automated migrations to support the newer performance tracking fields.
+- **Recent Weekly Frequency**: SQL logic (`SUM(CASE WHEN timestamp >= date('now', '-7 days') THEN 1 ELSE 0 END)`) provides real-time counts of exercise sessions within the last 7 days.
 
 ---
 
 ## 3. UI Implementation
 
-### 3.1 Jetpack Compose UI
+### 3.1 Dashboard Layout
 The UI is organized into modular sections within `MainScreen.kt`:
-- **ActiveSessionCard**: Displays live timer and rep counts with a pulsing connectivity indicator.
-- **InsightsSection**: Houses the **Performance Trend** bar chart.
-- **RecentActivitySection**: A scrollable list of past sessions.
-- **ExerciseSelectorSection**: Collapsible grid for choosing the current workout.
+- **History Pager (Top)**: A `HorizontalPager` containing **Timeline** (grouped activity) and **Lifetime Stats** (frequency cards with weekly counts).
+- **ActiveSessionCard**: Displays live timer and rep counts with pulsing animation.
+- **InsightsSection**: Houses the **Performance Trend** bar chart with adaptive axis labels.
 
-### 3.2 Data Visualization
-- Uses **MPAndroidChart** integrated via `AndroidView` interop.
-- **Trend Charts**: Bar charts that show progress over the last 10 sessions.
-- **Styling**: Cubic-bezier smoothing and specialized fill colors matching the "Mint & Navy" palette.
+### 3.2 Home Screen Widgets (Jetpack Glance)
+Implemented using the **Glance** framework for Compose-like widget development:
+- **QuickStartWidget**: Provides one-tap shortcuts to popular exercises and shows sensor status.
+- **PerformanceSnapshotWidget**: Displays a summary of the most recent session with a motivational progress ring.
+- **Resilience**: State is synchronized via a `WidgetHelper` and `SharedPreferences` to ensure widgets reflect app state instantly.
 
 ---
 
 ## 4. Permissions & Lifecycle
-The app handles complex Android Bluetooth permissions across different OS versions:
-- **Android 12 (API 31)**: Requires `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT`.
-- **Android 13 (API 33)**: Requires `POST_NOTIFICATIONS` for connection alerts.
-- **Android 14-16**: Uses `RECEIVER_NOT_EXPORTED` flag for broadcast safety.
+- **Android 12-16 Support**: Handles `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT`, and `POST_NOTIFICATIONS`.
+- **Configuration Resilience**: Use of ViewModels and the standalone `WorkoutSession` ensures the timer never resets during screen rotations.
 
 ---
 
 ## 5. Reactive Logic (RxJava)
-Asynchronous operations are handled via **RxJava 3**:
-- **Chained Finalization**: When a session stops, the app fetches past data, calculates deltas, saves the new summary, and refreshes the history in a single non-blocking stream.
-- **Threading**: Database operations run on `Schedulers.io()`, calculations on `Schedulers.computation()`, and UI updates on `AndroidSchedulers.mainThread()`.
+- **Chained Finalization**: When a session stops, the app uses `flatMapCompletable` and `andThen` to:
+    1. Fetch previous summaries.
+    2. Save the current session results.
+    3. Refresh the recent activity list and lifetime stats.
+- **UI State**: The `MainUiState` class bridges Java RxJava streams to Compose `mutableStateOf` properties.
