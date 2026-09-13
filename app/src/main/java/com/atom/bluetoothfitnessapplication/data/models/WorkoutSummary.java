@@ -40,6 +40,9 @@ public class WorkoutSummary {
     @ColumnInfo(name = "symmetry_score")
     private float symmetryScore;
 
+    @ColumnInfo(name = "range_of_motion", defaultValue = "0")
+    private float rangeOfMotion;
+
     public WorkoutSummary(String exerciseType, int repCount, float maxPower, float avgPower, 
                           float consistency, float cadence, long duration, String timestamp,
                           float stabilityScore, float symmetryScore) {
@@ -53,6 +56,7 @@ public class WorkoutSummary {
         this.timestamp = timestamp;
         this.stabilityScore = stabilityScore;
         this.symmetryScore = symmetryScore;
+        this.rangeOfMotion = 0;
     }
 
     public long getId() { return id; }
@@ -68,4 +72,6 @@ public class WorkoutSummary {
     public String getTimestamp() { return timestamp; }
     public float getStabilityScore() { return stabilityScore; }
     public float getSymmetryScore() { return symmetryScore; }
+    public float getRangeOfMotion() { return rangeOfMotion; }
+    public void setRangeOfMotion(float rangeOfMotion) { this.rangeOfMotion = rangeOfMotion; }
 }

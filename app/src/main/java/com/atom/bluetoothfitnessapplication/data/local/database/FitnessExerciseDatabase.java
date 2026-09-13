@@ -28,7 +28,7 @@ import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
         Weights.class, Skipping.class, PushUp.class, Backs.class,
         MountainClimbers.class, Flapjacks.class, SitUps.class, Walking.class, Plank.class,
         WorkoutSummary.class} ,
-        version = 4, exportSchema = false)
+        version = 5, exportSchema = false)
 public abstract class FitnessExerciseDatabase extends RoomDatabase {
 
     private static volatile FitnessExerciseDatabase instance;
@@ -41,7 +41,7 @@ public abstract class FitnessExerciseDatabase extends RoomDatabase {
                 if (instance==null) {
                     instance = Room.databaseBuilder(context, FitnessExerciseDatabase.class,
                             "fitness_database")
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                             .build();
                 }
             }
@@ -91,6 +91,13 @@ public abstract class FitnessExerciseDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase supportSQLiteDatabase) {
             supportSQLiteDatabase.execSQL("ALTER TABLE `workout_summaries` ADD COLUMN `stability_score` REAL NOT NULL DEFAULT 0.0");
             supportSQLiteDatabase.execSQL("ALTER TABLE `workout_summaries` ADD COLUMN `symmetry_score` REAL NOT NULL DEFAULT 0.0");
+        }
+    };
+
+    static final Migration MIGRATION_4_5 = new Migration(4,5) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase supportSQLiteDatabase) {
+            supportSQLiteDatabase.execSQL("ALTER TABLE `workout_summaries` ADD COLUMN `range_of_motion` REAL NOT NULL DEFAULT 0.0");
         }
     };
 }

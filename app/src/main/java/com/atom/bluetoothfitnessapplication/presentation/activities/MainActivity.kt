@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.atom.bluetoothfitnessapplication.R
 import com.atom.bluetoothfitnessapplication.data.interfaces.StartStopButtonListener
@@ -138,7 +139,10 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                             session.gyroZ.add(it[5])
                             session.gyroMagnitudes.add(gyroMag)
                             
-                            val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(session.magnitudes)
+                            val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(
+                                session.magnitudes, 
+                                session.gyroMagnitudes
+                            )
                             session.liveRepCount = reps
                             uiState.liveRepCount = reps
                         }
@@ -150,6 +154,7 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         (application as FitnessApplication).applicationComponent.inject(this)
 
@@ -205,7 +210,14 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     onReconnect = { setupBluetooth() },
                     barData = uiState.barData,
                     recentActivity = uiState.allRecentSummaries,
-                    exerciseStats = uiState.exerciseFrequencyStats
+                    exerciseStats = uiState.exerciseFrequencyStats,
+                    drillDownSummaries = uiState.drillDownSummaries,
+                    drillDownExercise = uiState.drillDownExerciseName,
+                    onStatsCardClick = { exercise -> fetchDrillDownSummaries(exercise) },
+                    onCloseDrillDown = { 
+                        uiState.drillDownSummaries = emptyList()
+                        uiState.drillDownExerciseName = null
+                    }
                 )
             }
         }
@@ -325,6 +337,16 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
         compositeDisposable.add(disposable)
     }
 
+    private fun fetchDrillDownSummaries(exerciseType: String) {
+        val disposable = exerciseViewModel.getPastSummaries(exerciseType, 6)
+            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ summaries ->
+                uiState.drillDownSummaries = summaries
+                uiState.drillDownExerciseName = exerciseType
+            }, { Log.e(TAG, "Error fetching drill down", it) })
+        compositeDisposable.add(disposable)
+    }
+
     private fun scanBLEDevice() {
         if (scanning) return
         uiState.isScanning = true
@@ -348,10 +370,21 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
     private fun stopExerciseSession() {
         val session = exerciseViewModel.activeSession
         val selected = session.selectedExercise ?: return
+        
+        // Immediately stop tracking and clear exercise to prevent sensor data from restarting timer
         session.isRunning = false
+        session.selectedExercise = null
+        uiState.selectedExercise = null
+        uiState.liveRepCount = 0
+        
+        // Immediate UI feedback for the timer
+        updateTimerText(session.seconds)
         
         if (session.magnitudes.isNotEmpty()) {
-            val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(session.magnitudes)
+            val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(
+                session.magnitudes,
+                session.gyroMagnitudes
+            )
             val mean = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateMean(session.magnitudes)
             val max = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateMax(session.magnitudes)
             val stdDev = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateStdDev(session.magnitudes, mean)
@@ -361,6 +394,10 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
 
             val summary = WorkoutSummary(selected, reps, max, mean, stdDev, cadence, session.seconds.toLong(), LocalDateTime.now().toString(), stability, symmetry)
             
+            if (selected == getString(R.string.sit_up)) {
+                summary.rangeOfMotion = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateRangeOfMotion(session.gyroMagnitudes, reps)
+            }
+
             val disposable = exerciseViewModel.getPastSummaries(selected, 6)
                 .flatMapCompletable { past ->
                     uiState.pastSummaries = past
@@ -391,14 +428,10 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     WidgetHelper.saveLastExercise(this@MainActivity, summary.exerciseType, value, unit, secondary)
 
                     session.reset()
-                    uiState.selectedExercise = null
-                    uiState.liveRepCount = 0
                 }, { Log.e(TAG, "Finalize Error", it) })
             compositeDisposable.add(disposable)
         } else {
             session.reset()
-            uiState.selectedExercise = null
-            uiState.liveRepCount = 0
         }
     }
 
@@ -412,18 +445,26 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
 
     private fun onResetTimer() {
         exerciseViewModel.activeSession.reset()
-        uiState.timerText = "00 : 00 : 00"
+        uiState.selectedExercise = null
+        uiState.liveRepCount = 0
+        updateTimerText(0)
+    }
+
+    private fun updateTimerText(totalSeconds: Int) {
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val secs = totalSeconds % 60
+        uiState.timerText = String.format(Locale.getDefault(), "%02d : %02d : %02d", hours, minutes, secs)
     }
 
     private fun runTimer() {
         handler.post(object : Runnable {
             override fun run() {
                 val session = exerciseViewModel.activeSession
-                val hours = session.seconds / 3600
-                val minutes = (session.seconds % 3600) / 60
-                val secs = session.seconds % 60
-                uiState.timerText = String.format(Locale.getDefault(), "%02d : %02d : %02d", hours, minutes, secs)
-                if (session.isRunning) session.incrementSeconds()
+                if (session.isRunning) {
+                    session.incrementSeconds()
+                    updateTimerText(session.seconds)
+                }
                 handler.postDelayed(this, 1000)
             }
         })

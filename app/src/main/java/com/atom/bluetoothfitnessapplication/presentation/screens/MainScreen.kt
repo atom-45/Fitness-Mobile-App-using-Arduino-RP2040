@@ -77,7 +77,11 @@ fun MainScreen(
     onReconnect: () -> Unit,
     barData: BarData?,
     recentActivity: List<WorkoutSummary>,
-    exerciseStats: List<ExerciseStats>
+    exerciseStats: List<ExerciseStats>,
+    drillDownSummaries: List<WorkoutSummary> = emptyList(),
+    drillDownExercise: String? = null,
+    onStatsCardClick: (String) -> Unit = {},
+    onCloseDrillDown: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -144,7 +148,14 @@ fun MainScreen(
 
             // Moved Multi-view pager here (Above Stopwatch, under text)
             item {
-                HistorySection(recentActivity, exerciseStats)
+                HistorySection(
+                    recentActivity = recentActivity,
+                    exerciseStats = exerciseStats,
+                    drillDownSummaries = drillDownSummaries,
+                    drillDownExercise = drillDownExercise,
+                    onStatsCardClick = onStatsCardClick,
+                    onCloseDrillDown = onCloseDrillDown
+                )
             }
 
             item {
@@ -716,7 +727,14 @@ fun InsightsSection(
 }
 
 @Composable
-fun HistorySection(recentActivity: List<WorkoutSummary>, exerciseStats: List<ExerciseStats>) {
+fun HistorySection(
+    recentActivity: List<WorkoutSummary>,
+    exerciseStats: List<ExerciseStats>,
+    drillDownSummaries: List<WorkoutSummary> = emptyList(),
+    drillDownExercise: String? = null,
+    onStatsCardClick: (String) -> Unit = {},
+    onCloseDrillDown: () -> Unit = {}
+) {
     val pagerState = rememberPagerState(pageCount = { 2 }) // Reduced to 2 tabs
     val scope = rememberCoroutineScope()
     
@@ -749,14 +767,134 @@ fun HistorySection(recentActivity: List<WorkoutSummary>, exerciseStats: List<Exe
 
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 250.dp, max = 450.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 250.dp, max = 650.dp), // Increased max height to accommodate list
             verticalAlignment = Alignment.Top
         ) { page ->
             when (page) {
                 0 -> GroupedTimelineList(recentActivity)
-                1 -> ExerciseFrequencyGrid(exerciseStats)
+                1 -> Column {
+                    ExerciseFrequencyGrid(exerciseStats, onStatsCardClick)
+                    
+                    if (drillDownExercise != null) {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "$drillDownExercise History",
+                                fontFamily = Marvel,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            IconButton(onClick = onCloseDrillDown) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(16.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        drillDownSummaries.forEach { summary ->
+                            DrillDownHistoryItem(summary)
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+fun DrillDownHistoryItem(summary: WorkoutSummary) {
+    val isPlank = summary.exerciseType == stringResource(id = R.string.plank)
+    val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = formatDate(summary.timestamp),
+                    fontFamily = Marvel,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = summary.timestamp.split("T").getOrElse(1) { "" }.take(5),
+                    fontFamily = Marvel,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Stats Grid within the card
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DetailMiniStat(
+                    label = if (isPlank) "Hold" else "Reps",
+                    value = if (isPlank) "${summary.duration}s" else "${summary.repCount}",
+                    modifier = Modifier.weight(1f)
+                )
+                DetailMiniStat(
+                    label = if (isPlank) "Stab" else "Power",
+                    value = if (isPlank) String.format(Locale.getDefault(), "%.0f%%", summary.stabilityScore)
+                            else String.format(Locale.getDefault(), "%.1fG", summary.maxPower),
+                    modifier = Modifier.weight(1f)
+                )
+                DetailMiniStat(
+                    label = if (isSitUp) "ROM" else "Tempo",
+                    value = if (isSitUp) String.format(Locale.getDefault(), "%.0f°", summary.rangeOfMotion)
+                            else String.format(Locale.getDefault(), "%.1fs", summary.cadence),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            if (!isPlank) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DetailMiniStat(
+                        label = "Symmetry",
+                        value = String.format(Locale.getDefault(), "%.0f%%", summary.symmetryScore),
+                        modifier = Modifier.weight(1f)
+                    )
+                    DetailMiniStat(
+                        label = "Avg Power",
+                        value = String.format(Locale.getDefault(), "%.1fG", summary.avgPower),
+                        modifier = Modifier.weight(1f)
+                    )
+                    DetailMiniStat(
+                        label = "Consistency",
+                        value = String.format(Locale.getDefault(), "%.0f%%", (1f - summary.consistency.coerceAtMost(1f)) * 100f),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailMiniStat(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = label, fontFamily = Marvel, fontSize = 9.sp, color = Color.Gray)
+        Text(text = value, fontFamily = Marvel, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
@@ -800,7 +938,7 @@ private fun formatDate(dateStr: String): String {
 }
 
 @Composable
-fun ExerciseFrequencyGrid(stats: List<ExerciseStats>) {
+fun ExerciseFrequencyGrid(stats: List<ExerciseStats>, onCardClick: (String) -> Unit) {
     if (stats.isEmpty()) {
         EmptyHistoryState("No workout data yet.")
     } else {
@@ -810,16 +948,19 @@ fun ExerciseFrequencyGrid(stats: List<ExerciseStats>) {
             contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
             items(stats) { stat ->
-                FrequencyCard(stat)
+                FrequencyCard(stat, onClick = { onCardClick(stat.exerciseType) })
             }
         }
     }
 }
 
 @Composable
-fun FrequencyCard(stat: ExerciseStats) {
+fun FrequencyCard(stat: ExerciseStats, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.width(160.dp).height(180.dp),
+        modifier = Modifier
+            .width(160.dp)
+            .height(180.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
@@ -1013,6 +1154,7 @@ fun WorkoutSummarySection(
             Spacer(modifier = Modifier.height(16.dp))
 
             val isPlank = summary.exerciseType == stringResource(id = R.string.plank)
+            val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up)
             val isCardio = summary.exerciseType == stringResource(id = R.string.skipping) || 
                           summary.exerciseType == stringResource(id = R.string.mt_climbers)
 
@@ -1057,6 +1199,19 @@ fun WorkoutSummarySection(
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.weight(1f))
+                } else if (isSitUp) {
+                    StatCard(
+                        label = "Range of Motion",
+                        value = String.format(Locale.getDefault(), "%.0f°", summary.rangeOfMotion),
+                        delta = AnalyzerUtils.getImprovementMessage(summary.rangeOfMotion, past, "rom"),
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        label = "Symmetry",
+                        value = String.format(Locale.getDefault(), "%.0f%%", summary.symmetryScore),
+                        delta = AnalyzerUtils.getImprovementMessage(summary.symmetryScore, past, "symmetry"),
+                        modifier = Modifier.weight(1f)
+                    )
                 } else if (isCardio) {
                     StatCard(
                         label = "Cadence",
@@ -1205,7 +1360,11 @@ fun MainScreenPreview() {
             onReconnect = {},
             barData = null,
             recentActivity = emptyList(),
-            exerciseStats = emptyList()
+            exerciseStats = emptyList(),
+            drillDownSummaries = emptyList(),
+            drillDownExercise = null,
+            onStatsCardClick = {},
+            onCloseDrillDown = {}
         )
     }
 }

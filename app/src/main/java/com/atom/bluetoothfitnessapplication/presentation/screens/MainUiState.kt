@@ -27,4 +27,8 @@ class MainUiState {
     var pastSummaries by mutableStateOf<List<WorkoutSummary>>(emptyList())
     var allRecentSummaries by mutableStateOf<List<WorkoutSummary>>(emptyList())
     var exerciseFrequencyStats by mutableStateOf<List<ExerciseStats>>(emptyList())
+    
+    // Drill-down history state
+    var drillDownSummaries by mutableStateOf<List<WorkoutSummary>>(emptyList())
+    var drillDownExerciseName by mutableStateOf<String?>(null)
 }
