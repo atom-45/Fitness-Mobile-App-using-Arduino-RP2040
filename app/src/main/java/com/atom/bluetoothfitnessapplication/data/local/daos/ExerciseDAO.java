@@ -2,6 +2,7 @@ package com.atom.bluetoothfitnessapplication.data.local.daos;
 
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
@@ -99,28 +100,55 @@ public interface ExerciseDAO {
     Completable insertWalking(Walking walking);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertWalkingList(List<Walking> walking);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertSitUps(SitUps sitUps);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertSitUpsList(List<SitUps> sitUps);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertMountainClimbers(MountainClimbers mountainClimbers);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertMountainClimbersList(List<MountainClimbers> mountainClimbers);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertBacks(Backs backs);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertBacksList(List<Backs> backs);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertFlapJacks(Flapjacks flapjacks);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertFlapJacksList(List<Flapjacks> flapjacks);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertWeights(Weights weights);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertWeightsList(List<Weights> weights);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertPushUp(PushUp pushUp);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertPushUpList(List<PushUp> pushUp);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertSkipping(Skipping skipping);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertSkippingList(List<Skipping> skipping);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertPlank(Plank plank);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertPlankList(List<Plank> plank);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertExerciseDescription(ExerciseDescription exerciseDescription);
@@ -138,4 +166,7 @@ public interface ExerciseDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertWorkoutSummary(WorkoutSummary workoutSummary);
+
+    @Delete
+    Completable deleteWorkoutSummary(WorkoutSummary workoutSummary);
 }

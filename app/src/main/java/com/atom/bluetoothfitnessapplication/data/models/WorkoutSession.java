@@ -25,6 +25,7 @@ public class WorkoutSession {
     private final List<Float> gyroY = new ArrayList<>();
     private final List<Float> gyroZ = new ArrayList<>();
     private final List<Float> gyroMagnitudes = new ArrayList<>();
+    private final List<Object> accumulatedDataPoints = new ArrayList<>();
 
     public String getSelectedExercise() { return selectedExercise; }
     public void setSelectedExercise(String exercise) { this.selectedExercise = exercise; }
@@ -44,6 +45,7 @@ public class WorkoutSession {
     public List<Float> getGyroY() { return gyroY; }
     public List<Float> getGyroZ() { return gyroZ; }
     public List<Float> getGyroMagnitudes() { return gyroMagnitudes; }
+    public List<Object> getAccumulatedDataPoints() { return accumulatedDataPoints; }
 
     public void reset() {
         magnitudes.clear();
@@ -51,6 +53,7 @@ public class WorkoutSession {
         gyroY.clear();
         gyroZ.clear();
         gyroMagnitudes.clear();
+        accumulatedDataPoints.clear();
         seconds = 0;
         liveRepCount = 0;
         selectedExercise = null;

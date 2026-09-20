@@ -138,36 +138,72 @@ public class ExerciseRepository {
         return exerciseDAO.insertWalking(walking);
     }
 
+    public Completable insertWalkingList(List<Walking> walking) {
+        return exerciseDAO.insertWalkingList(walking);
+    }
+
     public Completable insertSitUps(SitUps sitUps) {
         return exerciseDAO.insertSitUps(sitUps);
+    }
+
+    public Completable insertSitUpsList(List<SitUps> sitUps) {
+        return exerciseDAO.insertSitUpsList(sitUps);
     }
 
     public Completable insertMountainClimbers(MountainClimbers mountainClimbers) {
         return exerciseDAO.insertMountainClimbers(mountainClimbers);
     }
 
+    public Completable insertMountainClimbersList(List<MountainClimbers> mountainClimbers) {
+        return exerciseDAO.insertMountainClimbersList(mountainClimbers);
+    }
+
     public Completable insertBacks(Backs backs) {
         return exerciseDAO.insertBacks(backs);
+    }
+
+    public Completable insertBacksList(List<Backs> backs) {
+        return exerciseDAO.insertBacksList(backs);
     }
 
     public Completable insertFlapJacks(Flapjacks flapjacks) {
         return exerciseDAO.insertFlapJacks(flapjacks);
     }
 
+    public Completable insertFlapJacksList(List<Flapjacks> flapjacks) {
+        return exerciseDAO.insertFlapJacksList(flapjacks);
+    }
+
     public Completable insertWeights(Weights weights) {
         return exerciseDAO.insertWeights(weights);
+    }
+
+    public Completable insertWeightsList(List<Weights> weights) {
+        return exerciseDAO.insertWeightsList(weights);
     }
 
     public Completable insertPushUp(PushUp pushUp) {
         return exerciseDAO.insertPushUp(pushUp);
     }
 
+    public Completable insertPushUpList(List<PushUp> pushUp) {
+        return exerciseDAO.insertPushUpList(pushUp);
+    }
+
     public Completable insertSkipping(Skipping skipping) {
         return exerciseDAO.insertSkipping(skipping);
     }
 
+    public Completable insertSkippingList(List<Skipping> skipping) {
+        return exerciseDAO.insertSkippingList(skipping);
+    }
+
     public Completable insertPlank(Plank plank){
         return exerciseDAO.insertPlank(plank);
+    }
+
+    public Completable insertPlankList(List<Plank> plank) {
+        return exerciseDAO.insertPlankList(plank);
     }
 
     public Completable insertExerciseDescription(ExerciseDescription exerciseDescription) {
@@ -188,6 +224,10 @@ public class ExerciseRepository {
 
     public Completable insertWorkoutSummary(WorkoutSummary workoutSummary) {
         return exerciseDAO.insertWorkoutSummary(workoutSummary);
+    }
+
+    public Completable deleteWorkoutSummary(WorkoutSummary workoutSummary) {
+        return exerciseDAO.deleteWorkoutSummary(workoutSummary);
     }
 
 }

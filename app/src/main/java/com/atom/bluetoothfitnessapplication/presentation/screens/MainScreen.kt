@@ -6,6 +6,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,17 +15,21 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -81,7 +86,8 @@ fun MainScreen(
     drillDownSummaries: List<WorkoutSummary> = emptyList(),
     drillDownExercise: String? = null,
     onStatsCardClick: (String) -> Unit = {},
-    onCloseDrillDown: () -> Unit = {}
+    onCloseDrillDown: () -> Unit = {},
+    onDeleteActivity: (WorkoutSummary) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -112,39 +118,56 @@ fun MainScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
+        val pullToRefreshState = rememberPullToRefreshState()
+        PullToRefreshBox(
+            state = pullToRefreshState,
+            isRefreshing = isScanning,
+            onRefresh = onReconnect,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues = paddingValues)
-                .background(color = MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            if (isScanning) {
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                .padding(paddingValues = paddingValues),
+            indicator = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isScanning) {
                         LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth().height(4.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             color = MintGreen,
                             trackColor = MaterialTheme.colorScheme.surfaceVariant
                         )
-                        Text(
-                            text = "Searching for sensor...",
-                            fontFamily = Marvel,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                    } else {
+                        val fraction = pullToRefreshState.distanceFraction
+                        if (fraction > 0.01f) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .graphicsLayer {
+                                        alpha = fraction.coerceIn(0f, 1f)
+                                        rotationZ = fraction * 180f
+                                        translationY = fraction * 100f // Use translation instead of padding
+                                    },
+                                tint = MintGreen
+                            )
+                        }
                     }
                 }
             }
-
-            item {
-                WelcomeSection()
-            }
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.background),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                item {
+                    WelcomeSection()
+                }
 
             // Moved Multi-view pager here (Above Stopwatch, under text)
             item {
@@ -154,7 +177,8 @@ fun MainScreen(
                     drillDownSummaries = drillDownSummaries,
                     drillDownExercise = drillDownExercise,
                     onStatsCardClick = onStatsCardClick,
-                    onCloseDrillDown = onCloseDrillDown
+                    onCloseDrillDown = onCloseDrillDown,
+                    onDeleteActivity = onDeleteActivity
                 )
             }
 
@@ -199,6 +223,7 @@ fun MainScreen(
             }
         }
     }
+}
 }
 
 @Composable
@@ -733,7 +758,8 @@ fun HistorySection(
     drillDownSummaries: List<WorkoutSummary> = emptyList(),
     drillDownExercise: String? = null,
     onStatsCardClick: (String) -> Unit = {},
-    onCloseDrillDown: () -> Unit = {}
+    onCloseDrillDown: () -> Unit = {},
+    onDeleteActivity: (WorkoutSummary) -> Unit = {}
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 }) // Reduced to 2 tabs
     val scope = rememberCoroutineScope()
@@ -767,12 +793,12 @@ fun HistorySection(
 
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 250.dp, max = 650.dp), // Increased max height to accommodate list
+            modifier = Modifier.fillMaxWidth().height(450.dp), 
             verticalAlignment = Alignment.Top
         ) { page ->
             when (page) {
-                0 -> GroupedTimelineList(recentActivity)
-                1 -> Column {
+                0 -> GroupedTimelineList(recentActivity, onDeleteActivity)
+                1 -> Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                     ExerciseFrequencyGrid(exerciseStats, onStatsCardClick)
                     
                     if (drillDownExercise != null) {
@@ -793,10 +819,48 @@ fun HistorySection(
                                 Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(16.dp))
                             }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        drillDownSummaries.forEach { summary ->
-                            DrillDownHistoryItem(summary)
-                            Spacer(modifier = Modifier.height(12.dp))
+                        
+                        if (drillDownSummaries.isNotEmpty()) {
+                            val historyPagerState = rememberPagerState(pageCount = { drillDownSummaries.size })
+                            
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                HorizontalPager(
+                                    state = historyPagerState,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentPadding = PaddingValues(horizontal = 0.dp),
+                                    pageSpacing = 16.dp
+                                ) { pageIndex ->
+                                    DrillDownHistoryItem(drillDownSummaries[pageIndex])
+                                }
+                                
+                                Spacer(modifier = Modifier.height(12.dp))
+                                
+                                // Simple Pager Indicator
+                                Row(
+                                    Modifier
+                                        .height(10.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    repeat(drillDownSummaries.size) { iteration ->
+                                        val color = if (historyPagerState.currentPage == iteration) MintGreen else Color.LightGray.copy(alpha = 0.5f)
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(horizontal = 4.dp)
+                                                .clip(CircleShape)
+                                                .background(color)
+                                                .size(6.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                "No history sessions found.",
+                                fontFamily = Marvel,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(top = 12.dp)
+                            )
                         }
                     }
                 }
@@ -898,24 +962,76 @@ fun DetailMiniStat(label: String, value: String, modifier: Modifier = Modifier) 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun GroupedTimelineList(activity: List<WorkoutSummary>) {
+fun GroupedTimelineList(activity: List<WorkoutSummary>, onDelete: (WorkoutSummary) -> Unit) {
     if (activity.isEmpty()) {
         EmptyHistoryState()
     } else {
-        val grouped = activity.groupBy { it.timestamp.take(10) }
-        Column(modifier = Modifier.fillMaxWidth()) {
+        val grouped = remember(activity) { activity.groupBy { it.timestamp.take(10) } }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
             grouped.forEach { (date, sessions) ->
-                Text(
-                    text = formatDate(date),
-                    fontFamily = Marvel,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-                sessions.forEach { summary ->
-                    RecentActivityItem(summary)
+                stickyHeader {
+                    Text(
+                        text = formatDate(date),
+                        fontFamily = Marvel,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(vertical = 8.dp)
+                    )
+                }
+                
+                items(
+                    items = sessions,
+                    key = { it.id }
+                ) { summary ->
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = {
+                            if (it == SwipeToDismissBoxValue.StartToEnd) {
+                                onDelete(summary)
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    )
+
+                    Box(modifier = Modifier.animateItem()) {
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            enableDismissFromStartToEnd = true,
+                            enableDismissFromEndToStart = false,
+                            backgroundContent = {
+                                val color = when (dismissState.dismissDirection) {
+                                    SwipeToDismissBoxValue.StartToEnd -> CrimsonRed
+                                    else -> Color.Transparent
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(color)
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
+                            content = {
+                                RecentActivityItem(summary)
+                            }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }

@@ -86,9 +86,9 @@ class QuickStartWidget : GlanceAppWidget() {
                 modifier = GlanceModifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                WidgetActionChip(context, context.getString(R.string.push_up), R.drawable.push_ups, "Push")
+                WidgetActionChip(context, context.getString(R.string.push_up), R.drawable.push_up, "Push")
                 Spacer(GlanceModifier.width(10.dp))
-                WidgetActionChip(context, context.getString(R.string.plank), R.drawable.plank, "Plank")
+                WidgetActionChip(context, context.getString(R.string.plank), R.drawable.planks, "Plank")
                 Spacer(GlanceModifier.width(10.dp))
                 WidgetActionChip(context, context.getString(R.string.skipping), R.drawable.skipping, "Skip")
             }

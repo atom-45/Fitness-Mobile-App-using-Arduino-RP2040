@@ -34,10 +34,10 @@ public class WorkoutSummary {
     @ColumnInfo(name = "timestamp")
     private String timestamp;
 
-    @ColumnInfo(name = "stability_score")
+    @ColumnInfo(name = "stability_score", defaultValue = "0")
     private float stabilityScore;
 
-    @ColumnInfo(name = "symmetry_score")
+    @ColumnInfo(name = "symmetry_score", defaultValue = "0")
     private float symmetryScore;
 
     @ColumnInfo(name = "range_of_motion", defaultValue = "0")

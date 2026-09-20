@@ -23,7 +23,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.atom.bluetoothfitnessapplication.R
 import com.atom.bluetoothfitnessapplication.data.interfaces.StartStopButtonListener
-import com.atom.bluetoothfitnessapplication.data.models.*
 import com.atom.bluetoothfitnessapplication.di.application.FitnessApplication
 import com.atom.bluetoothfitnessapplication.factories.ViewModelFactory
 import com.atom.bluetoothfitnessapplication.presentation.screens.MainScreen
@@ -32,13 +31,7 @@ import com.atom.bluetoothfitnessapplication.presentation.theme.FitnessAppTheme
 import com.atom.bluetoothfitnessapplication.presentation.viewmodels.ExerciseViewModel
 import com.atom.bluetoothfitnessapplication.services.BluetoothLeService
 import com.atom.bluetoothfitnessapplication.utilities.Constants
-import com.atom.bluetoothfitnessapplication.utilities.WidgetHelper
-import com.github.mikephil.charting.data.*
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.pow
@@ -63,7 +56,6 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
 
     private val uiState = MainUiState()
     private lateinit var exerciseViewModel: ExerciseViewModel
-    private val compositeDisposable = CompositeDisposable()
     private var dateOfExercise: String = ""
 
     private val CHANNEL_ID = "bluetooth_status_channel"
@@ -128,8 +120,20 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                 BluetoothLeService.ACTION_DATA_AVAILABLE -> {
                     val data = intent.getFloatArrayExtra(BluetoothLeService.EXTRA_SENSOR_DATA)
                     data?.let {
-                        saveExerciseData(it.map { v -> v.toString() }.toTypedArray())
                         if (session.isRunning) {
+                            exerciseViewModel.saveExerciseData(
+                                it.map { v -> v.toString() }.toTypedArray(),
+                                dateOfExercise,
+                                getString(R.string.push_up),
+                                getString(R.string.sit_up),
+                                getString(R.string.skipping),
+                                getString(R.string.walking),
+                                getString(R.string.flap_jack),
+                                getString(R.string.weights),
+                                getString(R.string.backs),
+                                getString(R.string.mt_climbers),
+                                getString(R.string.plank)
+                            )
                             val accMag = sqrt(it[0].toDouble().pow(2.0) + it[1].toDouble().pow(2.0) + it[2].toDouble().pow(2.0)).toFloat()
                             val gyroMag = sqrt(it[3].toDouble().pow(2.0) + it[4].toDouble().pow(2.0) + it[5].toDouble().pow(2.0)).toFloat()
 
@@ -139,12 +143,15 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                             session.gyroZ.add(it[5])
                             session.gyroMagnitudes.add(gyroMag)
                             
-                            val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(
-                                session.magnitudes, 
-                                session.gyroMagnitudes
-                            )
-                            session.liveRepCount = reps
-                            uiState.liveRepCount = reps
+                            // Optimization: Recalculate reps every 5 samples to reduce UI thread load
+                            if (session.magnitudes.size % 5 == 0) {
+                                val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(
+                                    session.magnitudes, 
+                                    session.gyroMagnitudes
+                                )
+                                session.liveRepCount = reps
+                                uiState.liveRepCount = reps
+                            }
                         }
                     }
                 }
@@ -184,15 +191,36 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     timerText = uiState.timerText,
                     exerciseDescription = uiState.exerciseDescription,
                     onDescriptionChange = { uiState.exerciseDescription = it },
-                    onSaveDescription = { saveDescriptionData(uiState.exerciseDescription) },
+                    onSaveDescription = { 
+                        exerciseViewModel.saveDescriptionData(uiState.exerciseDescription) {
+                            Toast.makeText(this@MainActivity, "Session Notes saved!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     selectedExercise = uiState.selectedExercise,
                     onExerciseSelect = { 
                         uiState.selectedExercise = it
                         exerciseViewModel.activeSession.selectedExercise = it
+                        exerciseViewModel.onStartTimer(uiState)
                     },
-                    onStopTimer = { stopExerciseSession() },
-                    onResetTimer = { onResetTimer() },
-                    onPlotGraph = { ex, _, _, isReps -> fetchTrendData(ex, isReps) },
+                    onStopTimer = { 
+                        exerciseViewModel.stopExerciseSession(
+                            this@MainActivity,
+                            uiState,
+                            getString(R.string.push_up),
+                            getString(R.string.sit_up),
+                            getString(R.string.skipping),
+                            getString(R.string.walking),
+                            getString(R.string.flap_jack),
+                            getString(R.string.weights),
+                            getString(R.string.backs),
+                            getString(R.string.mt_climbers),
+                            getString(R.string.plank)
+                        )
+                    },
+                    onResetTimer = { exerciseViewModel.onResetTimer(uiState) },
+                    onPlotGraph = { ex, _, _, isReps -> 
+                        exerciseViewModel.fetchTrendData(ex, isReps, uiState, getString(R.string.plank), getString(R.string.skipping), getString(R.string.mt_climbers))
+                    },
                     onClearGraph = { uiState.barData = null },
                     exerciseTypes = resources.getStringArray(R.array.exercises_array),
                     initialExerciseType = resources.getStringArray(R.array.exercises_array)[0],
@@ -200,7 +228,9 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     isAccelerometer = uiState.isRepsTrend,
                     onPlotTypeChange = { 
                         uiState.isRepsTrend = it
-                        uiState.selectedExercise?.let { ex -> fetchTrendData(ex, it) }
+                        uiState.selectedExercise?.let { ex -> 
+                            exerciseViewModel.fetchTrendData(ex, it, uiState, getString(R.string.plank), getString(R.string.skipping), getString(R.string.mt_climbers))
+                        }
                     },
                     liveReps = uiState.liveRepCount,
                     currentSummary = uiState.currentWorkoutSummary,
@@ -213,18 +243,21 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     exerciseStats = uiState.exerciseFrequencyStats,
                     drillDownSummaries = uiState.drillDownSummaries,
                     drillDownExercise = uiState.drillDownExerciseName,
-                    onStatsCardClick = { exercise -> fetchDrillDownSummaries(exercise) },
+                    onStatsCardClick = { exercise -> exerciseViewModel.fetchDrillDownSummaries(exercise, uiState) },
                     onCloseDrillDown = { 
                         uiState.drillDownSummaries = emptyList()
                         uiState.drillDownExerciseName = null
+                    },
+                    onDeleteActivity = { summary -> 
+                        exerciseViewModel.deleteWorkoutSummary(summary, uiState)
                     }
                 )
             }
         }
 
-        runTimer()
-        fetchAllRecentSummaries()
-        fetchExerciseStats()
+        exerciseViewModel.startTimerLoop(uiState)
+        exerciseViewModel.fetchAllRecentSummaries(uiState)
+        exerciseViewModel.fetchExerciseStats(uiState)
 
         val gattServiceIntent = Intent(this, BluetoothLeService::class.java)
         bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE)
@@ -253,7 +286,7 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.round_bluetooth_connected_24)
+            .setSmallIcon(R.drawable.tracker)
             .setContentTitle("Sensor Connected").setAutoCancel(true)
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, builder.build())
     }
@@ -264,87 +297,6 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
         bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
         if (bluetoothAdapter?.isEnabled == false) startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
         scanBLEDevice()
-    }
-
-    private fun fetchTrendData(exerciseType: String, isPrimaryMetric: Boolean) {
-        val disposable = exerciseViewModel.getPastSummaries(exerciseType, 10)
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ summaries ->
-                if (summaries.isEmpty()) { uiState.barData = null; return@subscribe }
-                val isPlank = exerciseType == getString(R.string.plank)
-                val isCardio = exerciseType == getString(R.string.skipping) || exerciseType == getString(R.string.mt_climbers)
-                val entries = summaries.reversed().mapIndexed { i, s ->
-                    val value = when {
-                        isPlank -> if (isPrimaryMetric) s.duration.toFloat() else s.stabilityScore
-                        isCardio -> if (isPrimaryMetric) (if (s.cadence > 0) 1f/s.cadence else 0f) else s.repCount.toFloat()
-                        else -> if (isPrimaryMetric) s.repCount.toFloat() else s.maxPower
-                    }
-                    BarEntry(i.toFloat(), value)
-                }
-                val label = when {
-                    isPlank -> if (isPrimaryMetric) "Hold Time (s)" else "Stability (%)"
-                    isCardio -> if (isPrimaryMetric) "Cadence (reps/s)" else "Total Reps"
-                    else -> if (isPrimaryMetric) "Repetitions" else "Peak Power (G)"
-                }
-                val dataSet = BarDataSet(entries, label).apply {
-                    color = android.graphics.Color.parseColor("#00C853")
-                    valueTextColor = android.graphics.Color.GRAY
-                    setDrawValues(true)
-                }
-                uiState.barData = BarData(dataSet).apply { barWidth = 0.6f }
-            }, { Log.e(TAG, "Trend Error", it) })
-        compositeDisposable.add(disposable)
-    }
-
-    private fun saveExerciseData(exerciseData: Array<String>) {
-        val selected = exerciseViewModel.activeSession.selectedExercise ?: return
-        onStartTimer()
-        val time = LocalTime.now().toString()
-        val disposable = when (selected) {
-            getString(R.string.push_up) -> exerciseViewModel.insertPushUp(PushUp(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.sit_up) -> exerciseViewModel.insertSitUps(SitUps(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.skipping) -> exerciseViewModel.insertSkipping(Skipping(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.walking) -> exerciseViewModel.insertWalking(Walking(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.flap_jack) -> exerciseViewModel.insertFlapJacks(Flapjacks(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.weights) -> exerciseViewModel.insertWeights(Weights(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.backs) -> exerciseViewModel.insertBacks(Backs(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.mt_climbers) -> exerciseViewModel.insertMountainClimbers(MountainClimbers(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            getString(R.string.plank) -> exerciseViewModel.insertPlank(Plank(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise))
-            else -> null
-        }?.subscribeOn(Schedulers.io())?.subscribe()
-        disposable?.let { compositeDisposable.add(it) }
-    }
-
-    private fun saveDescriptionData(description: String) {
-        if (description.isEmpty()) return
-        val disposable = exerciseViewModel.insertExerciseDescription(ExerciseDescription(LocalDateTime.now().toString(), description))
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show() }, {})
-        compositeDisposable.add(disposable)
-    }
-
-    private fun fetchAllRecentSummaries() {
-        val disposable = exerciseViewModel.getAllRecentSummaries(20)
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ summaries -> uiState.allRecentSummaries = summaries }, {})
-        compositeDisposable.add(disposable)
-    }
-
-    private fun fetchExerciseStats() {
-        val disposable = exerciseViewModel.getExerciseFrequencyStats()
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ stats -> uiState.exerciseFrequencyStats = stats }, {})
-        compositeDisposable.add(disposable)
-    }
-
-    private fun fetchDrillDownSummaries(exerciseType: String) {
-        val disposable = exerciseViewModel.getPastSummaries(exerciseType, 6)
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ summaries ->
-                uiState.drillDownSummaries = summaries
-                uiState.drillDownExerciseName = exerciseType
-            }, { Log.e(TAG, "Error fetching drill down", it) })
-        compositeDisposable.add(disposable)
     }
 
     private fun scanBLEDevice() {
@@ -365,109 +317,6 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
 
     override fun startStopButtonPressed(buttonStatus: String) {
         bluetoothLeService?.writeCharacteristicToBLEDevice(buttonStatus)
-    }
-
-    private fun stopExerciseSession() {
-        val session = exerciseViewModel.activeSession
-        val selected = session.selectedExercise ?: return
-        
-        // Immediately stop tracking and clear exercise to prevent sensor data from restarting timer
-        session.isRunning = false
-        session.selectedExercise = null
-        uiState.selectedExercise = null
-        uiState.liveRepCount = 0
-        
-        // Immediate UI feedback for the timer
-        updateTimerText(session.seconds)
-        
-        if (session.magnitudes.isNotEmpty()) {
-            val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(
-                session.magnitudes,
-                session.gyroMagnitudes
-            )
-            val mean = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateMean(session.magnitudes)
-            val max = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateMax(session.magnitudes)
-            val stdDev = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateStdDev(session.magnitudes, mean)
-            val cadence = if (reps > 0) session.seconds.toFloat() / reps else 0f
-            val stability = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateStabilityScore(session.gyroMagnitudes)
-            val symmetry = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateSymmetryScore(session.gyroX, session.gyroY, session.gyroZ)
-
-            val summary = WorkoutSummary(selected, reps, max, mean, stdDev, cadence, session.seconds.toLong(), LocalDateTime.now().toString(), stability, symmetry)
-            
-            if (selected == getString(R.string.sit_up)) {
-                summary.rangeOfMotion = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateRangeOfMotion(session.gyroMagnitudes, reps)
-            }
-
-            val disposable = exerciseViewModel.getPastSummaries(selected, 6)
-                .flatMapCompletable { past ->
-                    uiState.pastSummaries = past
-                    uiState.currentWorkoutSummary = summary
-                    exerciseViewModel.insertWorkoutSummary(summary)
-                }
-                .andThen(exerciseViewModel.getAllRecentSummaries(20))
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ recent -> 
-                    uiState.allRecentSummaries = recent
-                    fetchExerciseStats() // Refresh counts
-                    
-                    // Save for Widget
-                    val value = when {
-                        summary.exerciseType == getString(R.string.plank) -> summary.duration.toFloat()
-                        summary.exerciseType == getString(R.string.skipping) || summary.exerciseType == getString(R.string.mt_climbers) -> if (summary.cadence > 0) 1f/summary.cadence else 0f
-                        else -> summary.repCount.toFloat()
-                    }
-                    val unit = when {
-                        summary.exerciseType == getString(R.string.plank) -> "sec"
-                        summary.exerciseType == getString(R.string.skipping) || summary.exerciseType == getString(R.string.mt_climbers) -> "reps/s"
-                        else -> "reps"
-                    }
-                    val secondary = if (summary.exerciseType == getString(R.string.plank)) 
-                        String.format(Locale.getDefault(), "%.0f%% Stab", summary.stabilityScore)
-                        else String.format(Locale.getDefault(), "%.1fG Max", summary.maxPower)
-
-                    WidgetHelper.saveLastExercise(this@MainActivity, summary.exerciseType, value, unit, secondary)
-
-                    session.reset()
-                }, { Log.e(TAG, "Finalize Error", it) })
-            compositeDisposable.add(disposable)
-        } else {
-            session.reset()
-        }
-    }
-
-    private fun onStartTimer() { 
-        if (!exerciseViewModel.activeSession.isRunning) {
-            exerciseViewModel.activeSession.reset()
-            uiState.currentWorkoutSummary = null
-        }
-        exerciseViewModel.activeSession.isRunning = true 
-    }
-
-    private fun onResetTimer() {
-        exerciseViewModel.activeSession.reset()
-        uiState.selectedExercise = null
-        uiState.liveRepCount = 0
-        updateTimerText(0)
-    }
-
-    private fun updateTimerText(totalSeconds: Int) {
-        val hours = totalSeconds / 3600
-        val minutes = (totalSeconds % 3600) / 60
-        val secs = totalSeconds % 60
-        uiState.timerText = String.format(Locale.getDefault(), "%02d : %02d : %02d", hours, minutes, secs)
-    }
-
-    private fun runTimer() {
-        handler.post(object : Runnable {
-            override fun run() {
-                val session = exerciseViewModel.activeSession
-                if (session.isRunning) {
-                    session.incrementSeconds()
-                    updateTimerText(session.seconds)
-                }
-                handler.postDelayed(this, 1000)
-            }
-        })
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -497,11 +346,6 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        compositeDisposable.clear()
         unbindService(serviceConnection)
-    }
-
-    companion object {
-        private const val TAG = "MainActivity"
     }
 }
