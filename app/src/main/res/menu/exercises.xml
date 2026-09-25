@@ -28,4 +28,10 @@
     <item android:id="@+id/weightsOption"
         android:title="Weights"/>
 
+    <item android:id="@+id/legRaisesOption"
+        android:title="@string/leg_raises"/>
+
+    <item android:id="@+id/legHipRaisesOption"
+        android:title="@string/leg_hip_raises"/>
+
 </menu>

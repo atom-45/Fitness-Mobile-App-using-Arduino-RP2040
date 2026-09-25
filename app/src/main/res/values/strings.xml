@@ -10,6 +10,8 @@
     <string name="skipping">Skipping</string>
     <string name="sit_up">Sit Up</string>
     <string name="push_up">Push Up</string>
+    <string name="leg_raises">Leg Raises</string>
+    <string name="leg_hip_raises">Leg Hip Raises</string>
     <string name="description">Description</string>
     <string name="start_stop">Start/Stop</string>
     <string name="bluetooth_connected">Connected</string>
@@ -22,6 +24,8 @@
     <string name="weights_exercise_on_going">Weights exercise on going</string>
     <string name="backs_exercise">Backs exercise on going</string>
     <string name="mountain_climbers_exercise">Mountain Climbers exercise on going</string>
+    <string name="leg_raises_exercise">Leg Raises exercise on going</string>
+    <string name="leg_hip_raises_exercise">Leg Hip Raises exercise on going</string>
     <string name="stop_exercise">Stop Exercise</string>
     <string name="not_connected_no_exercise">Not Connected/No Exercise</string>
     <string name="describe_your_exercise">Describe Your Exercise</string>
@@ -68,6 +72,8 @@
         <item>@string/backs</item>
         <item>@string/mt_climbers</item>
         <item>@string/plank</item>
+        <item>@string/leg_raises</item>
+        <item>@string/leg_hip_raises</item>
     </string-array>
 
     <string-array name="acceleration_array">

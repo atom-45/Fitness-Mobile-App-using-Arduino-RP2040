@@ -45,7 +45,7 @@ import com.atom.bluetoothfitnessapplication.R
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats
 import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary
 import com.atom.bluetoothfitnessapplication.presentation.theme.*
-import com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils
+import com.atom.bluetoothfitnessapplication.dsp.DynamicAnalyzerUtils
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import kotlinx.coroutines.delay
@@ -87,7 +87,9 @@ fun MainScreen(
     drillDownExercise: String? = null,
     onStatsCardClick: (String) -> Unit = {},
     onCloseDrillDown: () -> Unit = {},
-    onDeleteActivity: (WorkoutSummary) -> Unit = {}
+    onDeleteActivity: (WorkoutSummary) -> Unit = {},
+    onTimelineItemClick: (WorkoutSummary) -> Unit = {},
+    onDismissSummary: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -178,7 +180,8 @@ fun MainScreen(
                     drillDownExercise = drillDownExercise,
                     onStatsCardClick = onStatsCardClick,
                     onCloseDrillDown = onCloseDrillDown,
-                    onDeleteActivity = onDeleteActivity
+                    onDeleteActivity = onDeleteActivity,
+                    onTimelineItemClick = onTimelineItemClick
                 )
             }
 
@@ -195,7 +198,11 @@ fun MainScreen(
 
             if (currentSummary != null) {
                 item {
-                    WorkoutSummarySection(summary = currentSummary, past = pastSummaries)
+                    WorkoutSummarySection(
+                        summary = currentSummary, 
+                        past = pastSummaries,
+                        onDismiss = onDismissSummary
+                    )
                 }
             }
 
@@ -463,7 +470,8 @@ fun ExerciseSelectorSection(
             val exercises = listOf(
                 R.string.push_up, R.string.sit_up, R.string.plank,
                 R.string.skipping, R.string.walking, R.string.mt_climbers,
-                R.string.backs, R.string.weights, R.string.flap_jack
+                R.string.backs, R.string.weights, R.string.flap_jack,
+                R.string.leg_raises, R.string.leg_hip_raises
             )
 
             exercises.chunked(3).forEach { rowItems ->
@@ -564,6 +572,10 @@ fun InsightsSection(
             val isPlank = exerciseType == stringResource(id = R.string.plank)
             val isCardio = exerciseType == stringResource(id = R.string.skipping) || 
                           exerciseType == stringResource(id = R.string.mt_climbers)
+            val isSitUp = exerciseType == stringResource(id = R.string.sit_up) || 
+                          exerciseType == stringResource(id = R.string.leg_raises) ||
+                          exerciseType == stringResource(id = R.string.leg_hip_raises) ||
+                          exerciseType == stringResource(id = R.string.backs)
             
             AnimatedPillToggle(
                 isSelected = isRepsTrend,
@@ -576,6 +588,7 @@ fun InsightsSection(
                 rightLabel = when {
                     isPlank -> "Stability"
                     isCardio -> "Reps"
+                    isSitUp -> "ROM"
                     else -> "Power"
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -648,6 +661,7 @@ fun InsightsSection(
                             val yLabel = when {
                                 isPlank -> if (isRepsTrend) "Seconds" else "Stability %"
                                 isCardio -> if (isRepsTrend) "Reps/s" else "Reps"
+                                isSitUp -> if (isRepsTrend) "Reps" else "Degrees (°)"
                                 else -> if (isRepsTrend) "Reps" else "G-Force"
                             }
                             
@@ -759,7 +773,8 @@ fun HistorySection(
     drillDownExercise: String? = null,
     onStatsCardClick: (String) -> Unit = {},
     onCloseDrillDown: () -> Unit = {},
-    onDeleteActivity: (WorkoutSummary) -> Unit = {}
+    onDeleteActivity: (WorkoutSummary) -> Unit = {},
+    onTimelineItemClick: (WorkoutSummary) -> Unit = {}
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 }) // Reduced to 2 tabs
     val scope = rememberCoroutineScope()
@@ -797,7 +812,7 @@ fun HistorySection(
             verticalAlignment = Alignment.Top
         ) { page ->
             when (page) {
-                0 -> GroupedTimelineList(recentActivity, onDeleteActivity)
+                0 -> GroupedTimelineList(recentActivity, onDeleteActivity, onTimelineItemClick)
                 1 -> Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                     ExerciseFrequencyGrid(exerciseStats, onStatsCardClick)
                     
@@ -872,7 +887,10 @@ fun HistorySection(
 @Composable
 fun DrillDownHistoryItem(summary: WorkoutSummary) {
     val isPlank = summary.exerciseType == stringResource(id = R.string.plank)
-    val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up)
+    val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up) || 
+                  summary.exerciseType == stringResource(id = R.string.leg_raises) ||
+                  summary.exerciseType == stringResource(id = R.string.leg_hip_raises) ||
+                  summary.exerciseType == stringResource(id = R.string.backs)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -918,7 +936,7 @@ fun DrillDownHistoryItem(summary: WorkoutSummary) {
                 )
                 DetailMiniStat(
                     label = if (isSitUp) "ROM" else "Tempo",
-                    value = if (isSitUp) String.format(Locale.getDefault(), "%.0f°", summary.rangeOfMotion)
+                    value = if (isSitUp) String.format(Locale.getDefault(), "%.2f°", summary.rangeOfMotion)
                             else String.format(Locale.getDefault(), "%.1fs", summary.cadence),
                     modifier = Modifier.weight(1f)
                 )
@@ -964,7 +982,11 @@ fun DetailMiniStat(label: String, value: String, modifier: Modifier = Modifier) 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun GroupedTimelineList(activity: List<WorkoutSummary>, onDelete: (WorkoutSummary) -> Unit) {
+fun GroupedTimelineList(
+    activity: List<WorkoutSummary>, 
+    onDelete: (WorkoutSummary) -> Unit,
+    onTimelineItemClick: (WorkoutSummary) -> Unit = {}
+) {
     if (activity.isEmpty()) {
         EmptyHistoryState()
     } else {
@@ -1028,7 +1050,7 @@ fun GroupedTimelineList(activity: List<WorkoutSummary>, onDelete: (WorkoutSummar
                                 }
                             },
                             content = {
-                                RecentActivityItem(summary)
+                                RecentActivityItem(summary, onItemClick = { onTimelineItemClick(summary) })
                             }
                         )
                     }
@@ -1172,9 +1194,11 @@ fun EmptyHistoryState(message: String = "No sessions yet. Start training!") {
 }
 
 @Composable
-fun RecentActivityItem(summary: WorkoutSummary) {
+fun RecentActivityItem(summary: WorkoutSummary, onItemClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -1216,6 +1240,10 @@ fun RecentActivityItem(summary: WorkoutSummary) {
             
             Column(horizontalAlignment = Alignment.End) {
                 val isPlank = summary.exerciseType == stringResource(id = R.string.plank)
+                val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up) || 
+                              summary.exerciseType == stringResource(id = R.string.leg_raises) ||
+                              summary.exerciseType == stringResource(id = R.string.leg_hip_raises) ||
+                              summary.exerciseType == stringResource(id = R.string.backs)
                 val isCardio = summary.exerciseType == stringResource(id = R.string.skipping) || 
                               summary.exerciseType == stringResource(id = R.string.mt_climbers)
 
@@ -1227,6 +1255,7 @@ fun RecentActivityItem(summary: WorkoutSummary) {
 
                 val secondaryMetric = when {
                     isPlank -> String.format(Locale.getDefault(), "%.0f%% Stab", summary.stabilityScore)
+                    isSitUp -> String.format(Locale.getDefault(), "%.2f° ROM", summary.rangeOfMotion)
                     isCardio -> "${summary.repCount} Reps"
                     else -> String.format(Locale.getDefault(), "%.1fG Max", summary.maxPower)
                 }
@@ -1252,7 +1281,8 @@ fun RecentActivityItem(summary: WorkoutSummary) {
 @Composable
 fun WorkoutSummarySection(
     summary: WorkoutSummary,
-    past: List<WorkoutSummary>
+    past: List<WorkoutSummary>,
+    onDismiss: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1260,17 +1290,70 @@ fun WorkoutSummarySection(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "${summary.exerciseType} Summary",
-                fontFamily = Marvel,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "${summary.exerciseType} Summary",
+                        fontFamily = Marvel,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = formatDate(summary.timestamp.take(10)) + " • " + summary.timestamp.split("T").getOrElse(1) { "" }.take(5),
+                        fontFamily = Marvel,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
+                }
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close Summary",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            if (past.isEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.35f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "First recorded session for ${summary.exerciseType}! Complete another session of ${summary.exerciseType} to compare your progress and see performance deltas.",
+                            fontFamily = Marvel,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             val isPlank = summary.exerciseType == stringResource(id = R.string.plank)
-            val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up)
+            val isSitUp = summary.exerciseType == stringResource(id = R.string.sit_up) || 
+                          summary.exerciseType == stringResource(id = R.string.leg_raises) ||
+                          summary.exerciseType == stringResource(id = R.string.leg_hip_raises) ||
+                          summary.exerciseType == stringResource(id = R.string.backs)
             val isCardio = summary.exerciseType == stringResource(id = R.string.skipping) || 
                           summary.exerciseType == stringResource(id = R.string.mt_climbers)
 
@@ -1279,14 +1362,14 @@ fun WorkoutSummarySection(
                     StatCard(
                         label = "Hold Time",
                         value = "${summary.duration}s",
-                        delta = AnalyzerUtils.getImprovementMessage(summary.duration.toFloat(), past, "duration"),
+                        delta = DynamicAnalyzerUtils.getImprovementMessage(summary.duration.toFloat(), past, "duration"),
                         modifier = Modifier.weight(1f)
                     )
                 } else {
                     StatCard(
                         label = "Total Reps",
                         value = summary.repCount.toString(),
-                        delta = AnalyzerUtils.getImprovementMessage(summary.repCount.toFloat(), past, "reps"),
+                        delta = DynamicAnalyzerUtils.getImprovementMessage(summary.repCount.toFloat(), past, "reps"),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -1295,7 +1378,7 @@ fun WorkoutSummarySection(
                     label = if (isPlank) "Stability" else "Peak Power",
                     value = if (isPlank) String.format(Locale.getDefault(), "%.0f%%", summary.stabilityScore) 
                             else String.format(Locale.getDefault(), "%.1fG", summary.maxPower),
-                    delta = AnalyzerUtils.getImprovementMessage(
+                    delta = DynamicAnalyzerUtils.getImprovementMessage(
                         if (isPlank) summary.stabilityScore else summary.maxPower, 
                         past, 
                         if (isPlank) "stability" else "power"
@@ -1318,14 +1401,14 @@ fun WorkoutSummarySection(
                 } else if (isSitUp) {
                     StatCard(
                         label = "Range of Motion",
-                        value = String.format(Locale.getDefault(), "%.0f°", summary.rangeOfMotion),
-                        delta = AnalyzerUtils.getImprovementMessage(summary.rangeOfMotion, past, "rom"),
+                        value = String.format(Locale.getDefault(), "%.2f°", summary.rangeOfMotion),
+                        delta = DynamicAnalyzerUtils.getImprovementMessage(summary.rangeOfMotion, past, "rom"),
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         label = "Symmetry",
                         value = String.format(Locale.getDefault(), "%.0f%%", summary.symmetryScore),
-                        delta = AnalyzerUtils.getImprovementMessage(summary.symmetryScore, past, "symmetry"),
+                        delta = DynamicAnalyzerUtils.getImprovementMessage(summary.symmetryScore, past, "symmetry"),
                         modifier = Modifier.weight(1f)
                     )
                 } else if (isCardio) {
@@ -1338,7 +1421,7 @@ fun WorkoutSummarySection(
                     StatCard(
                         label = "Consistency",
                         value = String.format(Locale.getDefault(), "%.0f%%", (1f - summary.consistency.coerceAtMost(1f)) * 100f),
-                        delta = AnalyzerUtils.getImprovementMessage(summary.consistency, past, "consistency"),
+                        delta = DynamicAnalyzerUtils.getImprovementMessage(summary.consistency, past, "consistency"),
                         modifier = Modifier.weight(1f)
                     )
                 } else {
@@ -1346,7 +1429,7 @@ fun WorkoutSummarySection(
                     StatCard(
                         label = "Symmetry",
                         value = String.format(Locale.getDefault(), "%.0f%%", summary.symmetryScore),
-                        delta = AnalyzerUtils.getImprovementMessage(summary.symmetryScore, past, "symmetry"),
+                        delta = DynamicAnalyzerUtils.getImprovementMessage(summary.symmetryScore, past, "symmetry"),
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(

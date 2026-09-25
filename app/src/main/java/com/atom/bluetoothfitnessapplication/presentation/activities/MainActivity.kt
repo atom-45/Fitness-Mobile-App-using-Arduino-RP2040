@@ -23,6 +23,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.atom.bluetoothfitnessapplication.R
 import com.atom.bluetoothfitnessapplication.data.interfaces.StartStopButtonListener
+import com.atom.bluetoothfitnessapplication.dsp.DynamicAnalyzerUtils
 import com.atom.bluetoothfitnessapplication.di.application.FitnessApplication
 import com.atom.bluetoothfitnessapplication.factories.ViewModelFactory
 import com.atom.bluetoothfitnessapplication.presentation.screens.MainScreen
@@ -132,12 +133,16 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                                 getString(R.string.weights),
                                 getString(R.string.backs),
                                 getString(R.string.mt_climbers),
-                                getString(R.string.plank)
+                                getString(R.string.plank),
+                                getString(R.string.leg_raises),
+                                getString(R.string.leg_hip_raises)
                             )
                             val accMag = sqrt(it[0].toDouble().pow(2.0) + it[1].toDouble().pow(2.0) + it[2].toDouble().pow(2.0)).toFloat()
                             val gyroMag = sqrt(it[3].toDouble().pow(2.0) + it[4].toDouble().pow(2.0) + it[5].toDouble().pow(2.0)).toFloat()
 
                             session.magnitudes.add(accMag)
+                            session.accY.add(it[1])
+                            session.accZ.add(it[2])
                             session.gyroX.add(it[3])
                             session.gyroY.add(it[4])
                             session.gyroZ.add(it[5])
@@ -145,10 +150,58 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                             
                             // Optimization: Recalculate reps every 5 samples to reduce UI thread load
                             if (session.magnitudes.size % 5 == 0) {
-                                val reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(
-                                    session.magnitudes, 
-                                    session.gyroMagnitudes
-                                )
+                                val reps = if (session.selectedExercise == getString(R.string.sit_up)) {
+                                    val sampleRate = DynamicAnalyzerUtils.calculateSampleRate(
+                                        session.accY,
+                                        session.seconds.toFloat()
+                                    )
+                                    DynamicAnalyzerUtils.calculateExerciseStats(
+                                        session.selectedExercise,
+                                        session.accY,
+                                        session.gyroX,
+                                        sampleRate
+                                    ).first
+                                } else if (session.selectedExercise == getString(R.string.push_up)) {
+                                    val sampleRate = DynamicAnalyzerUtils.calculateSampleRate(
+                                        session.accZ,
+                                        session.seconds.toFloat()
+                                    )
+                                    DynamicAnalyzerUtils.calculateExerciseStats(
+                                        session.selectedExercise,
+                                        session.accZ,
+                                        session.gyroX,
+                                        sampleRate
+                                    ).first
+                                } else if (session.selectedExercise == getString(R.string.leg_raises) || 
+                                           session.selectedExercise == getString(R.string.leg_hip_raises) ||
+                                           session.selectedExercise == getString(R.string.backs)) {
+                                    val sampleRate = DynamicAnalyzerUtils.calculateSampleRate(
+                                        session.accZ,
+                                        session.seconds.toFloat()
+                                    )
+                                    DynamicAnalyzerUtils.calculateExerciseStats(
+                                        session.selectedExercise,
+                                        session.accZ,
+                                        session.gyroX,
+                                        sampleRate
+                                    ).first
+                                } else if (session.selectedExercise == getString(R.string.skipping)) {
+                                    val sampleRate = DynamicAnalyzerUtils.calculateSampleRate(
+                                        session.magnitudes,
+                                        session.seconds.toFloat()
+                                    )
+                                    DynamicAnalyzerUtils.calculateExerciseStats(
+                                        session.selectedExercise,
+                                        session.magnitudes,
+                                        session.gyroMagnitudes,
+                                        sampleRate
+                                    ).first
+                                } else {
+                                    DynamicAnalyzerUtils.countReps(
+                                        session.magnitudes,
+                                        session.gyroMagnitudes
+                                    )
+                                }
                                 session.liveRepCount = reps
                                 uiState.liveRepCount = reps
                             }
@@ -214,12 +267,14 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                             getString(R.string.weights),
                             getString(R.string.backs),
                             getString(R.string.mt_climbers),
-                            getString(R.string.plank)
+                            getString(R.string.plank),
+                            getString(R.string.leg_raises),
+                            getString(R.string.leg_hip_raises)
                         )
                     },
                     onResetTimer = { exerciseViewModel.onResetTimer(uiState) },
                     onPlotGraph = { ex, _, _, isReps -> 
-                        exerciseViewModel.fetchTrendData(ex, isReps, uiState, getString(R.string.plank), getString(R.string.skipping), getString(R.string.mt_climbers))
+                        exerciseViewModel.fetchTrendData(ex, isReps, uiState, getString(R.string.plank), getString(R.string.skipping), getString(R.string.mt_climbers), getString(R.string.sit_up))
                     },
                     onClearGraph = { uiState.barData = null },
                     exerciseTypes = resources.getStringArray(R.array.exercises_array),
@@ -229,7 +284,7 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     onPlotTypeChange = { 
                         uiState.isRepsTrend = it
                         uiState.selectedExercise?.let { ex -> 
-                            exerciseViewModel.fetchTrendData(ex, it, uiState, getString(R.string.plank), getString(R.string.skipping), getString(R.string.mt_climbers))
+                            exerciseViewModel.fetchTrendData(ex, it, uiState, getString(R.string.plank), getString(R.string.skipping), getString(R.string.mt_climbers), getString(R.string.sit_up))
                         }
                     },
                     liveReps = uiState.liveRepCount,
@@ -250,6 +305,12 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     },
                     onDeleteActivity = { summary -> 
                         exerciseViewModel.deleteWorkoutSummary(summary, uiState)
+                    },
+                    onTimelineItemClick = { summary ->
+                        exerciseViewModel.selectTimelineSummary(summary, uiState)
+                    },
+                    onDismissSummary = {
+                        uiState.currentWorkoutSummary = null
                     }
                 )
             }

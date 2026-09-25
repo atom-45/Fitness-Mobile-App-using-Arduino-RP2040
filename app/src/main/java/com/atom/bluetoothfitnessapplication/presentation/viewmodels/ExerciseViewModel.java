@@ -12,6 +12,8 @@ import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
+import com.atom.bluetoothfitnessapplication.data.models.LegHipRaises;
+import com.atom.bluetoothfitnessapplication.data.models.LegRaises;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
 import com.atom.bluetoothfitnessapplication.data.models.PushUp;
@@ -22,6 +24,7 @@ import com.atom.bluetoothfitnessapplication.data.models.Weights;
 import com.atom.bluetoothfitnessapplication.data.models.WorkoutSession;
 import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
 import com.atom.bluetoothfitnessapplication.data.repositories.ExerciseRepository;
+import com.atom.bluetoothfitnessapplication.dsp.DynamicAnalyzerUtils;
 import com.atom.bluetoothfitnessapplication.presentation.screens.MainUiState;
 import com.atom.bluetoothfitnessapplication.utilities.Pair;
 import com.atom.bluetoothfitnessapplication.utilities.TimerUtils;
@@ -176,6 +179,18 @@ public class ExerciseViewModel extends ViewModel {
         return exerciseRepository.insertPlank(plank);
     }
 
+    public Observable<List<LegRaises>> getAllLegRaisesData() {
+        return exerciseRepository.getAllLegRaisesData();
+    }
+
+    public Single<List<LegRaises>> getLegRaisesDataByDate(String date) {
+        return exerciseRepository.getLegRaisesDataByDate(date);
+    }
+
+    public Completable insertLegRaises(LegRaises legRaises) {
+        return exerciseRepository.insertLegRaises(legRaises);
+    }
+
     public Completable insertExerciseDescription(ExerciseDescription exerciseDescription) {
         return exerciseRepository.insertExerciseDescription(exerciseDescription);
     }
@@ -207,15 +222,15 @@ public class ExerciseViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(pair -> {
-                    uiState.setAllRecentSummaries(pair.first);
-                    uiState.setExerciseFrequencyStats(pair.second);
+                    uiState.setAllRecentSummaries(pair.first());
+                    uiState.setExerciseFrequencyStats(pair.second());
                 }, throwable -> Log.e(TAG, "Delete Error", throwable));
         compositeDisposable.add(disposable);
     }
 
     // Business Logic Methods
 
-    public void fetchTrendData(String exerciseType, boolean isPrimaryMetric, MainUiState uiState, String plankName, String skippingName, String mtClimbersName) {
+    public void fetchTrendData(String exerciseType, boolean isPrimaryMetric, MainUiState uiState, String plankName, String skippingName, String mtClimbersName, String sitUpName) {
         Disposable disposable = getPastSummaries(exerciseType, 10)
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(summaries -> {
@@ -225,6 +240,8 @@ public class ExerciseViewModel extends ViewModel {
                     }
                     boolean isPlank = exerciseType.equals(plankName);
                     boolean isCardio = exerciseType.equals(skippingName) || exerciseType.equals(mtClimbersName);
+                    boolean isSitUp = exerciseType.equals(sitUpName);
+                    
                     List<BarEntry> entries = new ArrayList<>();
                     List<WorkoutSummary> reversed = new ArrayList<>(summaries);
                     Collections.reverse(reversed);
@@ -235,6 +252,8 @@ public class ExerciseViewModel extends ViewModel {
                             value = isPrimaryMetric ? (float) s.getDuration() : s.getStabilityScore();
                         } else if (isCardio) {
                             value = isPrimaryMetric ? (s.getCadence() > 0 ? 1f / s.getCadence() : 0f) : (float) s.getRepCount();
+                        } else if (isSitUp) {
+                            value = isPrimaryMetric ? (float) s.getRepCount() : s.getRangeOfMotion();
                         } else {
                             value = isPrimaryMetric ? (float) s.getRepCount() : s.getMaxPower();
                         }
@@ -245,6 +264,8 @@ public class ExerciseViewModel extends ViewModel {
                         label = isPrimaryMetric ? "Hold Time (s)" : "Stability (%)";
                     } else if (isCardio) {
                         label = isPrimaryMetric ? "Cadence (reps/s)" : "Total Reps";
+                    } else if (isSitUp) {
+                        label = isPrimaryMetric ? "Repetitions" : "Range of Motion (deg)";
                     } else {
                         label = isPrimaryMetric ? "Repetitions" : "Peak Power (G)";
                     }
@@ -259,7 +280,7 @@ public class ExerciseViewModel extends ViewModel {
         compositeDisposable.add(disposable);
     }
 
-    public void saveExerciseData(String[] exerciseData, String dateOfExercise, String pushUpLabel, String sitUpLabel, String skippingLabel, String walkingLabel, String flapJackLabel, String weightsLabel, String backsLabel, String mtClimbersLabel, String plankLabel) {
+    public void saveExerciseData(String[] exerciseData, String dateOfExercise, String pushUpLabel, String sitUpLabel, String skippingLabel, String walkingLabel, String flapJackLabel, String weightsLabel, String backsLabel, String mtClimbersLabel, String plankLabel, String legRaisesLabel, String legHipRaisesLabel) {
         String selected = activeSession.getSelectedExercise();
         if (selected == null || !activeSession.isRunning()) return;
         String time = LocalTime.now().toString();
@@ -275,6 +296,8 @@ public class ExerciseViewModel extends ViewModel {
         else if (s.equalsIgnoreCase(backsLabel.trim())) dataPoint = new Backs(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise);
         else if (s.equalsIgnoreCase(mtClimbersLabel.trim())) dataPoint = new MountainClimbers(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise);
         else if (s.equalsIgnoreCase(plankLabel.trim())) dataPoint = new Plank(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise);
+        else if (s.equalsIgnoreCase(legRaisesLabel.trim())) dataPoint = new LegRaises(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise);
+        else if (s.equalsIgnoreCase(legHipRaisesLabel.trim())) dataPoint = new LegHipRaises(exerciseData[0], exerciseData[1], exerciseData[2], exerciseData[3], exerciseData[4], exerciseData[5], time, dateOfExercise);
 
         if (dataPoint != null) {
             activeSession.getAccumulatedDataPoints().add(dataPoint);
@@ -315,11 +338,30 @@ public class ExerciseViewModel extends ViewModel {
         compositeDisposable.add(disposable);
     }
 
+    public void selectTimelineSummary(WorkoutSummary summary, MainUiState uiState) {
+        if (summary == null) return;
+        uiState.setCurrentWorkoutSummary(summary);
+
+        Disposable disposable = getPastSummaries(summary.getExerciseType(), 10)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(pastList -> {
+                    List<WorkoutSummary> filteredPast = new ArrayList<>();
+                    for (WorkoutSummary s : pastList) {
+                        if (s.getId() != summary.getId()) {
+                            filteredPast.add(s);
+                        }
+                    }
+                    uiState.setPastSummaries(filteredPast);
+                }, throwable -> Log.e(TAG, "Error selecting timeline summary", throwable));
+        compositeDisposable.add(disposable);
+    }
+
     @SuppressWarnings("unchecked")
     public void stopExerciseSession(Context context, MainUiState uiState, 
                                     String pushUpLabel, String sitUpLabel, String skippingLabel, 
                                     String walkingLabel, String flapJackLabel, String weightsLabel, 
-                                    String backsLabel, String mtClimbersLabel, String plankLabel) {
+                                    String backsLabel, String mtClimbersLabel, String plankLabel, String legRaisesLabel, String legHipRaisesLabel) {
         String selected = activeSession.getSelectedExercise();
         if (selected == null) return;
 
@@ -329,6 +371,8 @@ public class ExerciseViewModel extends ViewModel {
         List<Float> gyroXCopy = new ArrayList<>(activeSession.getGyroX());
         List<Float> gyroYCopy = new ArrayList<>(activeSession.getGyroY());
         List<Float> gyroZCopy = new ArrayList<>(activeSession.getGyroZ());
+        List<Float> accYCopy = new ArrayList<>(activeSession.getAccY());
+        List<Float> accZCopy = new ArrayList<>(activeSession.getAccZ());
 
         activeSession.setRunning(false);
         activeSession.setSelectedExercise(null);
@@ -337,23 +381,9 @@ public class ExerciseViewModel extends ViewModel {
 
         uiState.setTimerText(TimerUtils.formatElapsedTime(durationSec));
 
-        int reps = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.countReps(magnitudesCopy, gyroMagnitudesCopy);
-        Log.d(TAG, "stopExerciseSession: Calculated reps=" + reps + " from " + magnitudesCopy.size() + " samples");
-        float mean = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateMean(magnitudesCopy);
-        float max = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateMax(magnitudesCopy);
-        float stdDev = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateStdDev(magnitudesCopy, mean);
-        float cadence = reps > 0 ? (float) durationSec / reps : 0f;
-        float stability = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateStabilityScore(gyroMagnitudesCopy);
-        float symmetry = com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateSymmetryScore(gyroXCopy, gyroYCopy, gyroZCopy);
-
-        WorkoutSummary summary = new WorkoutSummary(selected, reps, max, mean, stdDev, cadence, (long) durationSec, LocalDateTime.now().toString(), stability, symmetry);
-
         String s = selected.trim();
-        if (s.equalsIgnoreCase(sitUpLabel.trim())) {
-            summary.setRangeOfMotion(com.atom.bluetoothfitnessapplication.utilities.AnalyzerUtils.calculateRangeOfMotion(gyroMagnitudesCopy, reps));
-        }
 
-        Completable batchInsert = Completable.complete();
+        final Completable batchInsert;
         if (!activeSession.getAccumulatedDataPoints().isEmpty()) {
             List<Object> points = new ArrayList<>(activeSession.getAccumulatedDataPoints());
             Log.d(TAG, "stopExerciseSession: Saving " + points.size() + " data points for " + selected);
@@ -366,22 +396,43 @@ public class ExerciseViewModel extends ViewModel {
             else if (s.equalsIgnoreCase(backsLabel.trim())) batchInsert = exerciseRepository.insertBacksList((List<Backs>)(List)points);
             else if (s.equalsIgnoreCase(mtClimbersLabel.trim())) batchInsert = exerciseRepository.insertMountainClimbersList((List<MountainClimbers>)(List)points);
             else if (s.equalsIgnoreCase(plankLabel.trim())) batchInsert = exerciseRepository.insertPlankList((List<Plank>)(List)points);
+            else if (s.equalsIgnoreCase(legRaisesLabel.trim())) batchInsert = exerciseRepository.insertLegRaisesList((List<LegRaises>)(List)points);
+            else if (s.equalsIgnoreCase(legHipRaisesLabel.trim())) batchInsert = exerciseRepository.insertLegHipRaisesList((List<LegHipRaises>)(List)points);
+            else batchInsert = Completable.complete();
         } else {
             Log.w(TAG, "stopExerciseSession: No data points accumulated");
+            batchInsert = Completable.complete();
         }
 
-        Disposable disposable = batchInsert.andThen(getPastSummaries(selected, 6))
+        Disposable disposable = DynamicAnalyzerUtils.processWorkoutSummaryReactive(
+                selected,
+                durationSec,
+                magnitudesCopy,
+                gyroMagnitudesCopy,
+                gyroXCopy,
+                gyroYCopy,
+                gyroZCopy,
+                accYCopy,
+                accZCopy
+        )
+        .flatMap(summary -> batchInsert.andThen(getPastSummaries(selected, 6))
                 .flatMap(past -> insertWorkoutSummary(summary)
                         .toSingleDefault(true)
                         .flatMap(ignored -> getAllRecentSummaries(20))
                         .map(recent -> new Pair<>(past, recent)))
-                .flatMap(pair -> getExerciseFrequencyStats().map(stats -> new Triple<>(pair.first, pair.second, stats)))
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(triple -> {
-                    uiState.setPastSummaries(triple.first);
-                    uiState.setCurrentWorkoutSummary(summary);
-                    uiState.setAllRecentSummaries(triple.second);
-                    uiState.setExerciseFrequencyStats(triple.third);
+                .map(pair -> new Pair<>(summary, pair)))
+        .flatMap(pair -> getExerciseFrequencyStats().map(stats -> new Triple<>(pair.first(), pair.second().first(), new Pair<>(pair.second().second(), stats))))
+        .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        .subscribe(triple -> {
+            WorkoutSummary summary = triple.first();
+            List<WorkoutSummary> past = triple.second();
+            List<WorkoutSummary> recent = triple.third().first();
+            List<ExerciseStats> stats = triple.third().second();
+
+            uiState.setPastSummaries(past);
+            uiState.setCurrentWorkoutSummary(summary);
+            uiState.setAllRecentSummaries(recent);
+            uiState.setExerciseFrequencyStats(stats);
 
                     float value;
                     if (summary.getExerciseType().equals(plankLabel)) {
@@ -401,9 +452,14 @@ public class ExerciseViewModel extends ViewModel {
                         unit = "reps";
                     }
 
-                    String secondary = summary.getExerciseType().equals(plankLabel)
-                            ? String.format(Locale.getDefault(), "%.0f%% Stab", summary.getStabilityScore())
-                            : String.format(Locale.getDefault(), "%.1fG Max", summary.getMaxPower());
+                    String secondary;
+                    if (summary.getExerciseType().equals(plankLabel)) {
+                        secondary = String.format(Locale.getDefault(), "%.0f%% Stab", summary.getStabilityScore());
+                    } else if (summary.getExerciseType().equals(sitUpLabel)) {
+                        secondary = String.format(Locale.getDefault(), "%.2f° ROM", summary.getRangeOfMotion());
+                    } else {
+                        secondary = String.format(Locale.getDefault(), "%.1fG Max", summary.getMaxPower());
+                    }
 
                     WidgetHelper.INSTANCE.saveLastExercise(context, summary.getExerciseType(), value, unit, secondary);
                 }, throwable -> Log.e(TAG, "Finalize Error", throwable));

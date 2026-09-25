@@ -11,6 +11,8 @@ import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
+import com.atom.bluetoothfitnessapplication.data.models.LegHipRaises;
+import com.atom.bluetoothfitnessapplication.data.models.LegRaises;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
 import com.atom.bluetoothfitnessapplication.data.models.PushUp;
@@ -75,6 +77,14 @@ public class ExerciseRepository {
         return exerciseDAO.getAllPlankData();
     }
 
+    public Observable<List<LegRaises>> getAllLegRaisesData() {
+        return exerciseDAO.getAllLegRaisesData();
+    }
+
+    public Observable<List<LegHipRaises>> getAllLegHipRaisesData() {
+        return exerciseDAO.getAllLegHipRaisesData();
+    }
+
 
 
     public Single<List<Walking>> getWalkingDataByDate(String date)
@@ -128,6 +138,14 @@ public class ExerciseRepository {
     public Single<List<Plank>> getPlankDataByDate(String date)
     {
         return exerciseDAO.getPlankDataByDate(date);
+    }
+
+    public Single<List<LegRaises>> getLegRaisesDataByDate(String date) {
+        return exerciseDAO.getLegRaisesDataByDate(date);
+    }
+
+    public Single<List<LegHipRaises>> getLegHipRaisesDataByDate(String date) {
+        return exerciseDAO.getLegHipRaisesDataByDate(date);
     }
 
     public Observable<List<ExerciseDescription>> getAllExerciseDescriptions() {
@@ -204,6 +222,22 @@ public class ExerciseRepository {
 
     public Completable insertPlankList(List<Plank> plank) {
         return exerciseDAO.insertPlankList(plank);
+    }
+
+    public Completable insertLegRaises(LegRaises legRaises) {
+        return exerciseDAO.insertLegRaises(legRaises);
+    }
+
+    public Completable insertLegRaisesList(List<LegRaises> legRaisesList) {
+        return exerciseDAO.insertLegRaisesList(legRaisesList);
+    }
+
+    public Completable insertLegHipRaises(LegHipRaises legHipRaises) {
+        return exerciseDAO.insertLegHipRaises(legHipRaises);
+    }
+
+    public Completable insertLegHipRaisesList(List<LegHipRaises> legHipRaisesList) {
+        return exerciseDAO.insertLegHipRaisesList(legHipRaisesList);
     }
 
     public Completable insertExerciseDescription(ExerciseDescription exerciseDescription) {

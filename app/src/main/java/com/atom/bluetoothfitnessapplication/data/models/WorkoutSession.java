@@ -21,6 +21,8 @@ public class WorkoutSession {
 
     // Sensor data buffers
     private final List<Float> magnitudes = new ArrayList<>();
+    private final List<Float> accY = new ArrayList<>();
+    private final List<Float> accZ = new ArrayList<>();
     private final List<Float> gyroX = new ArrayList<>();
     private final List<Float> gyroY = new ArrayList<>();
     private final List<Float> gyroZ = new ArrayList<>();
@@ -41,6 +43,8 @@ public class WorkoutSession {
     public void setLiveRepCount(int count) { this.liveRepCount = count; }
 
     public List<Float> getMagnitudes() { return magnitudes; }
+    public List<Float> getAccY() { return accY; }
+    public List<Float> getAccZ() { return accZ; }
     public List<Float> getGyroX() { return gyroX; }
     public List<Float> getGyroY() { return gyroY; }
     public List<Float> getGyroZ() { return gyroZ; }
@@ -49,6 +53,8 @@ public class WorkoutSession {
 
     public void reset() {
         magnitudes.clear();
+        accY.clear();
+        accZ.clear();
         gyroX.clear();
         gyroY.clear();
         gyroZ.clear();

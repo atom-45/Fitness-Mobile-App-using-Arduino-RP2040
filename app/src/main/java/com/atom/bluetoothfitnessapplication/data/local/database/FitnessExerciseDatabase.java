@@ -15,6 +15,8 @@ import com.atom.bluetoothfitnessapplication.data.models.AccelerometerData;
 import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
+import com.atom.bluetoothfitnessapplication.data.models.LegHipRaises;
+import com.atom.bluetoothfitnessapplication.data.models.LegRaises;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
 import com.atom.bluetoothfitnessapplication.data.models.PushUp;
@@ -26,9 +28,9 @@ import com.atom.bluetoothfitnessapplication.data.models.WorkoutSummary;
 
 @Database(entities = {AccelerometerData.class, ExerciseDescription.class,
         Weights.class, Skipping.class, PushUp.class, Backs.class,
-        MountainClimbers.class, Flapjacks.class, SitUps.class, Walking.class, Plank.class,
+        MountainClimbers.class, Flapjacks.class, SitUps.class, Walking.class, Plank.class, LegRaises.class, LegHipRaises.class,
         WorkoutSummary.class} ,
-        version = 6, exportSchema = false)
+        version = 8, exportSchema = false)
 public abstract class FitnessExerciseDatabase extends RoomDatabase {
 
     private static volatile FitnessExerciseDatabase instance;
@@ -41,7 +43,7 @@ public abstract class FitnessExerciseDatabase extends RoomDatabase {
                 if (instance==null) {
                     instance = Room.databaseBuilder(context, FitnessExerciseDatabase.class,
                             "fitness_database")
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                             .fallbackToDestructiveMigration()
                             .build();
                 }
@@ -115,6 +117,28 @@ public abstract class FitnessExerciseDatabase extends RoomDatabase {
                     "`stability_score` REAL NOT NULL DEFAULT 0, " +
                     "`symmetry_score` REAL NOT NULL DEFAULT 0, " +
                     "`range_of_motion` REAL NOT NULL DEFAULT 0)");
+        }
+    };
+
+    static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase supportSQLiteDatabase) {
+            supportSQLiteDatabase.execSQL("CREATE TABLE IF NOT EXISTS `leg_raises` " +
+                    "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`acceleration_x` TEXT, `acceleration_y` TEXT, `acceleration_z` TEXT, " +
+                    "`gyro_x` TEXT, `gyro_y` TEXT, `gyro_z` TEXT, " +
+                    "`time` TEXT, `date_of_exercise` TEXT)");
+        }
+    };
+
+    static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase supportSQLiteDatabase) {
+            supportSQLiteDatabase.execSQL("CREATE TABLE IF NOT EXISTS `leg_hip_raises` " +
+                    "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`acceleration_x` TEXT, `acceleration_y` TEXT, `acceleration_z` TEXT, " +
+                    "`gyro_x` TEXT, `gyro_y` TEXT, `gyro_z` TEXT, " +
+                    "`time` TEXT, `date_of_exercise` TEXT)");
         }
     };
 }

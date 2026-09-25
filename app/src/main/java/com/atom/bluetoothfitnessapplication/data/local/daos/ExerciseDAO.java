@@ -11,6 +11,8 @@ import com.atom.bluetoothfitnessapplication.data.models.Backs;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseDescription;
 import com.atom.bluetoothfitnessapplication.data.models.ExerciseStats;
 import com.atom.bluetoothfitnessapplication.data.models.Flapjacks;
+import com.atom.bluetoothfitnessapplication.data.models.LegHipRaises;
+import com.atom.bluetoothfitnessapplication.data.models.LegRaises;
 import com.atom.bluetoothfitnessapplication.data.models.MountainClimbers;
 import com.atom.bluetoothfitnessapplication.data.models.Plank;
 import com.atom.bluetoothfitnessapplication.data.models.PushUp;
@@ -56,6 +58,12 @@ public interface ExerciseDAO {
     @Query("SELECT * FROM planks")
     Observable<List<Plank>> getAllPlankData();
 
+    @Query("SELECT * FROM leg_raises")
+    Observable<List<LegRaises>> getAllLegRaisesData();
+
+    @Query("SELECT * FROM leg_hip_raises")
+    Observable<List<LegHipRaises>> getAllLegHipRaisesData();
+
     /**
      *
      * Below Exercise Date Queries.
@@ -87,6 +95,12 @@ public interface ExerciseDAO {
 
     @Query("SELECT * FROM planks WHERE date_of_exercise = :date")
     Single<List<Plank>> getPlankDataByDate(String date);
+
+    @Query("SELECT * FROM leg_raises WHERE date_of_exercise = :date")
+    Single<List<LegRaises>> getLegRaisesDataByDate(String date);
+
+    @Query("SELECT * FROM leg_hip_raises WHERE date_of_exercise = :date")
+    Single<List<LegHipRaises>> getLegHipRaisesDataByDate(String date);
 
 
 
@@ -149,6 +163,18 @@ public interface ExerciseDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertPlankList(List<Plank> plank);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertLegRaises(LegRaises legRaises);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertLegRaisesList(List<LegRaises> legRaisesList);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertLegHipRaises(LegHipRaises legHipRaises);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Completable insertLegHipRaisesList(List<LegHipRaises> legHipRaisesList);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertExerciseDescription(ExerciseDescription exerciseDescription);

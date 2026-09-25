@@ -1,8 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.BluetoothFitnessApplication" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Theme.BluetoothFitnessApplication" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/deep_navy</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Base.Theme.BluetoothFitnessApplication" parent="Theme.BluetoothFitnessApplication" />
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/deep_navy</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/deep_navy</item>
+        <item name="postSplashScreenTheme">@style/Theme.BluetoothFitnessApplication</item>
     </style>
 
     <style name="Base.Theme.ChipStyle" parent="Widget.Material3.Chip.Filter">
@@ -21,5 +32,4 @@
         <item name="backgroundColor">@color/crimson_red</item>
         <item name="cornerRadius">20dp</item>
     </style>
-
 </resources>
