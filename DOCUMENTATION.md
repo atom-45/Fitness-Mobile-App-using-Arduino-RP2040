@@ -56,6 +56,55 @@ The signal processing "brain" of the application that converts raw 6-axis IMU st
 
 ---
 
+## 3.1 Biomechanical & Fitness Metrics Definitions
+
+The application computes 6 primary fitness metrics stored in `WorkoutSummary.java`:
+
+### 1. Range of Motion (ROM - `rangeOfMotion`)
+- **Meaning**: Physical angular displacement (rotation in degrees, $\text{deg}$) traversed by the body or limb during each repetition (e.g., flexion in Sit-Ups or Leg Raises).
+- **Calculation (`RangeOfMotionCalculator.java`)**:
+  Trapezoidal integration of filtered 1D angular velocity ($\text{deg/s}$) over midpoint rep boundary windows $\frac{\text{peak}_i + \text{peak}_{i+1}}{2}$:
+  $$\text{AngularDisplacement} = \sum_{k=\text{start}}^{\text{end}-1} \frac{|y_k| + |y_{k+1}|}{2} \cdot \Delta t$$
+  $$\text{ROM} = \frac{\text{AngularDisplacement}}{2}$$
+  The summary records the average ROM in degrees across all detected repetitions in the set.
+
+### 2. Symmetry Score (`symmetryScore`)
+- **Meaning**: Evaluates directional alignment and balance during movement. A score of $100\%$ indicates perfectly balanced execution, while lower scores signal rotational twisting or side-to-side body drift.
+- **Calculation (`calculateSymmetryScore`)**:
+  Ratio of net 3D directional rotational drift to total absolute motion across all 3 gyroscope axes ($X, Y, Z$):
+  $$\text{TotalMotion} = \sum (|g_x| + |g_y| + |g_z|)$$
+  $$\text{NetDrift} = \left| \sum g_x \right| + \left| \sum g_y \right| + \left| \sum g_z \right|$$
+  $$\text{BiasRatio} = \frac{\text{NetDrift}}{\text{TotalMotion}}$$
+  $$\text{SymmetryScore} = \max\left(0, \; (1.0 - 2 \cdot \text{BiasRatio}) \times 100\%\right)$$
+
+### 3. Stability Score (`stabilityScore`)
+- **Meaning**: Quantifies posture stillness and core control during static holds (such as Planks) or dynamic repetitions. Higher scores ($0 - 100\%$) indicate steady, shake-free engagement.
+- **Calculation (`calculateStabilityScore`)**:
+  Exponential decay model based on the variance ($\sigma^2$) of the rotational gyroscope magnitude stream:
+  $$\text{Variance } (\sigma^2) = \frac{1}{N} \sum_{i=1}^{N} (|\mathbf{g}_i| - \mu_{|\mathbf{g}|})^2$$
+  $$\text{StabilityScore} = e^{-k \cdot \sigma^2} \times 100\% \quad \text{where } k = 8.0$$
+
+### 4. Cadence (`cadence`)
+- **Meaning**: Repetition pacing representing average seconds elapsed per repetition, or tempo during cardio exercises like Skipping and Mountain Climbers.
+- **Calculation (`processWorkoutSummaryReactive`)**:
+  $$\text{Cadence} = \frac{\text{Duration (seconds)}}{\text{Repetition Count}}$$
+
+### 5. Consistency (`consistency`)
+- **Meaning**: Measures how uniform the user's explosive thrust and force output are throughout the set. A lower consistency value (standard deviation) indicates smooth, repeatable movement across reps.
+- **Calculation (`calculateStdDev`)**:
+  Population standard deviation ($\sigma$) of the 3D acceleration magnitude series ($G$):
+  $$\text{Consistency } (\sigma) = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (|\mathbf{a}_i| - \mu_{|\mathbf{a}|})^2}$$
+
+### 6. Average Power (`avgPower`) & Max Power (`maxPower`)
+- **Meaning**: Measures peak and average instantaneous acceleration forces produced during exercise in Earth gravitational units ($G$).
+- **Calculation (`calculateMean` & `calculateMax`)**:
+  - **Max Power (`maxPower`)**: Peak instantaneous acceleration magnitude reached during the session:
+    $$\text{MaxPower} = \max_i \sqrt{a_{x,i}^2 + a_{y,i}^2 + a_{z,i}^2}$$
+  - **Average Power (`avgPower`)**: Arithmetic mean acceleration magnitude across all samples:
+    $$\text{AvgPower} = \frac{1}{N} \sum_{i=1}^{N} \sqrt{a_{x,i}^2 + a_{y,i}^2 + a_{z,i}^2}$$
+
+---
+
 ## 4. Storage Layer (`FitnessExerciseDatabase.java`)
 - **Version**: 8 (Room Persistence Library)
 - **Entities**: `AccelerometerData`, `ExerciseDescription`, `Weights`, `Skipping`, `PushUp`, `Backs`, `MountainClimbers`, `Flapjacks`, `SitUps`, `Walking`, `Plank`, `LegRaises`, `LegHipRaises`, `WorkoutSummary`.
