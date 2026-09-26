@@ -20,6 +20,7 @@ class MainUiState {
 
     var isBluetoothConnected by mutableStateOf(false)
     var isScanning by mutableStateOf(false)
+    var bleBatteryLevel by mutableStateOf<Int?>(null)
 
     // New analysis state
     var liveRepCount by mutableIntStateOf(0)

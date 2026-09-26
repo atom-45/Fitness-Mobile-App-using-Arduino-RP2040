@@ -115,8 +115,15 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                 BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
                     connected = false
                     uiState.isBluetoothConnected = false
+                    uiState.bleBatteryLevel = null
                     uiState.bluetoothStatus = getString(R.string.bluetooth_not_connected)
                     uiState.bluetoothIconRes = R.drawable.round_bluetooth_disabled_24
+                }
+                BluetoothLeService.ACTION_BATTERY_LEVEL_AVAILABLE -> {
+                    val level = intent.getIntExtra(BluetoothLeService.EXTRA_BATTERY_LEVEL, -1)
+                    if (level in 0..100) {
+                        uiState.bleBatteryLevel = level
+                    }
                 }
                 BluetoothLeService.ACTION_DATA_AVAILABLE -> {
                     val data = intent.getFloatArrayExtra(BluetoothLeService.EXTRA_SENSOR_DATA)
@@ -291,6 +298,7 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
                     currentSummary = uiState.currentWorkoutSummary,
                     pastSummaries = uiState.pastSummaries,
                     isBluetoothConnected = uiState.isBluetoothConnected,
+                    bleBatteryLevel = uiState.bleBatteryLevel,
                     isScanning = uiState.isScanning,
                     onReconnect = { setupBluetooth() },
                     barData = uiState.barData,
@@ -395,9 +403,13 @@ class MainActivity : ComponentActivity(), StartStopButtonListener {
             addAction(BluetoothLeService.ACTION_GATT_CONNECTED)
             addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED)
             addAction(BluetoothLeService.ACTION_DATA_AVAILABLE)
+            addAction(BluetoothLeService.ACTION_BATTERY_LEVEL_AVAILABLE)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) registerReceiver(gattUpdateReceiver, filter, RECEIVER_NOT_EXPORTED)
-        else registerReceiver(gattUpdateReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(gattUpdateReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(this, gattUpdateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        }
     }
 
     override fun onPause() {

@@ -37,6 +37,8 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.atom.bluetoothfitnessapplication.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE = "com.atom.bluetoothfitnessapplication.bluetooth.le.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_SENSOR_DATA = "com.atom.bluetoothfitnessapplication.bluetooth.le.EXTRA_DATA";
+    public final static String ACTION_BATTERY_LEVEL_AVAILABLE = "com.atom.bluetoothfitnessapplication.bluetooth.le.ACTION_BATTERY_LEVEL_AVAILABLE";
+    public final static String EXTRA_BATTERY_LEVEL = "com.atom.bluetoothfitnessapplication.bluetooth.le.EXTRA_BATTERY_LEVEL";
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTED = 2;
@@ -85,8 +87,17 @@ public class BluetoothLeService extends Service {
 
 
                 readCharacteristic(characteristic);
-                //writeCharacteristic(characteristic);
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+
+                BluetoothGattService batteryService = bluetoothGatt
+                        .getService(UUID.fromString(Constants.BATTERY_SERVICE_UUID));
+                if (batteryService != null) {
+                    BluetoothGattCharacteristic batteryChar = batteryService
+                            .getCharacteristic(UUID.fromString(Constants.BATTERY_LEVEL_CHARACTERISTIC_UUID));
+                    if (batteryChar != null) {
+                        readCharacteristic(batteryChar);
+                    }
+                }
 
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
@@ -221,6 +232,18 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic)
     {
+        if (UUID.fromString(Constants.BATTERY_LEVEL_CHARACTERISTIC_UUID).equals(characteristic.getUuid())) {
+            byte[] value = characteristic.getValue();
+            if (value != null && value.length > 0) {
+                int batteryLevel = value[0] & 0xFF;
+                Intent batteryIntent = new Intent(ACTION_BATTERY_LEVEL_AVAILABLE);
+                batteryIntent.setPackage(getPackageName());
+                batteryIntent.putExtra(EXTRA_BATTERY_LEVEL, batteryLevel);
+                sendBroadcast(batteryIntent);
+            }
+            return;
+        }
+
         final Intent intent = new Intent(action);
         intent.setPackage(getPackageName());
 

@@ -78,6 +78,7 @@ fun MainScreen(
     currentSummary: WorkoutSummary?,
     pastSummaries: List<WorkoutSummary>,
     isBluetoothConnected: Boolean,
+    bleBatteryLevel: Int? = null,
     isScanning: Boolean,
     onReconnect: () -> Unit,
     barData: BarData?,
@@ -112,7 +113,7 @@ fun MainScreen(
                             )
                         }
                     }
-                    BluetoothStatusIndicator(status = bluetoothStatus, iconRes = bluetoothIconRes)
+                    BluetoothStatusIndicator(status = bluetoothStatus, iconRes = bluetoothIconRes, batteryLevel = bleBatteryLevel)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -282,32 +283,64 @@ fun DailyMotivationBanner() {
 }
 
 @Composable
-fun BluetoothStatusIndicator(status: String, iconRes: Int) {
+fun BluetoothStatusIndicator(status: String, iconRes: Int, batteryLevel: Int? = null) {
     val isConnected = status == stringResource(id = R.string.bluetooth_connected)
     val color = if (isConnected) MintGreen else MaterialTheme.colorScheme.secondary
 
     Row(
-        modifier = Modifier
-            .padding(end = 16.dp)
-            .clip(CircleShape)
-            .background(color = color.copy(alpha = 0.1f))
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(end = 16.dp)
     ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-            tint = color
-        )
-        Spacer(modifier = Modifier.width(6.6.dp))
-        Text(
-            text = status,
-            fontFamily = Marvel,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
+        if (isConnected && batteryLevel != null) {
+            val batteryColor = when {
+                batteryLevel >= 50 -> MintGreen
+                batteryLevel >= 20 -> Color(0xFFFF9800)
+                else -> Color(0xFFFF5252)
+            }
+            val batteryIcon = when {
+                batteryLevel >= 50 -> "🔋"
+                else -> "🪫"
+            }
+            Row(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(color = batteryColor.copy(alpha = 0.15f))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$batteryIcon $batteryLevel%",
+                    fontFamily = Marvel,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = batteryColor
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(color = color.copy(alpha = 0.1f))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = color
+            )
+            Spacer(modifier = Modifier.width(6.6.dp))
+            Text(
+                text = status,
+                fontFamily = Marvel,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+        }
     }
 }
 
@@ -1510,14 +1543,25 @@ fun StatCard(label: String, value: String, delta: String, modifier: Modifier = M
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(text = label, fontSize = 12.sp, fontFamily = Marvel, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = Marvel)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = value, fontSize = 22.sp, fontWeight = FontWeight.Bold, fontFamily = Marvel)
             if (delta.isNotEmpty()) {
-                Text(
-                    text = delta,
-                    fontSize = 10.sp,
-                    fontFamily = Marvel,
-                    color = if (delta.contains("↑")) MintGreen else CrimsonRed
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                val isUp = delta.contains("↑")
+                val badgeColor = if (isUp) MintGreen else Color(0xFFFF5252)
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = badgeColor.copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        text = delta,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Marvel,
+                        color = badgeColor,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
             }
         }
     }
